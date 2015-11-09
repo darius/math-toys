@@ -14,7 +14,11 @@ function onLoad() {
     sheet.drawGrid();
     sheet.ctx.lineWidth = 1;
     sheet.ctx.strokeStyle = 'black';
-    sheet.drawLine(one, ({re: 2, im: 1}));
+    sheet.ctx.fillStyle = 'blue';
+    sheet.drawDot(one, 3);
+    sheet.drawLine(one, {re: 2, im: 1});
+    sheet.drawText(one, '1', {x: -14, y: 10});
+    sheet.drawSpiral(one, {re: 2, im: 1}, {re: 2, im: 1});
 }
 
 // A quiver is a collection of arrows, with dependencies between some of them.
@@ -110,8 +114,8 @@ function makeSheet(canvas, options) {
 
     // N.B. textOffset is in canvas (xy) coordinates.
     function drawText(at, text, textOffset) {
-        var x = at.re * scale + offset.x;
-        var y = at.im * scale + offset.y;
+        var x = at.re * scale + textOffset.x;
+        var y = at.im * scale + textOffset.y;
         ctx.save();
         ctx.scale(1, -1); // Back into left-handed coordinates so the text isn't flipped
         ctx.fillText(text, x, -y);
@@ -211,3 +215,27 @@ var override =
         }
         return obj1;
     });
+
+// Return a sequence of points along an arc from cnum u to uv.
+// Assuming uv = u*v, it should approximate a logarithmic spiral
+// similar to one from 1 to v.
+function computeSpiralArc(u, v, uv) {
+    // Multiples of v^(1/8) as points on the spiral from 1 to v.
+    var h4 = roughSqrt(v);
+    var h2 = roughSqrt(h4);
+    var h1 = roughSqrt(h2);
+    var h3 = mul(h2, h1);
+    var h5 = mul(h4, h1);
+    var h6 = mul(h4, h2);
+    var h7 = mul(h4, h3);
+
+    return [u,
+            mul(u, h1),
+            mul(u, h2),
+            mul(u, h3),
+            mul(u, h4),
+            mul(u, h5),
+            mul(u, h6),
+            mul(u, h7),
+            uv];
+}
