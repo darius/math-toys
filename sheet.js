@@ -8,8 +8,16 @@ var minSelectionDistance = 20;
 var dotRadius = 3;
 var selectedDotRadius = 10;
 
+var quiver;                     // for debug
+
 function onLoad() {
-    var quiver = makeQuiver();
+    quiver = makeQuiver();
+    quiver.add({op: variableOp, at: add(one, one)});
+    var ui = makeSheetUI(quiver, canvas, {}, {});
+    ui.show();
+}
+
+function tempTest() {
     var sheet = makeSheet(canvas);
     sheet.drawGrid();
     sheet.ctx.lineWidth = 1;
@@ -29,6 +37,7 @@ function onLoad() {
     sheet.drawDot(v.at, dotRadius);
     sheet.drawText(v.at, v.label, v.op.labelOffset);
 }
+
 
 // A quiver is a collection of arrows, with dependencies between some of them.
 // The arrows can move, and can be added or removed from the collection.
@@ -77,6 +86,7 @@ function makeQuiver() {
 
 var tau = 2*Math.PI;
 
+// A sheet is a canvas displaying the complex-number plane.
 function makeSheet(canvas, options) {
     options = override({center:   zero,
                         font:     '12pt Georgia',
@@ -92,13 +102,14 @@ function makeSheet(canvas, options) {
     var top    =  height/2;
     var scale  = width / options.realSpan;
 
-    function pointFromXY(xy) {
-        return {re: xy.x / scale, im: xy.y / scale};
-    }
-
     ctx.font = options.font;
     ctx.translate(right, top);
     ctx.scale(1, -1);
+
+    // Convert from canvas-relative pixel coordinates, such as from a mouse event.
+    function pointFromXY(xy) {
+        return {re: (xy.x - right) / scale, im: (top - xy.y) / scale};
+    }
 
     if (options.center.re !== 0 || options.center.im !== 0) {
         throw new Error("off-center sheet not supported yet");
@@ -209,6 +220,217 @@ function makeSheet(canvas, options) {
     };
 }
 
+// A sheet UI presents a quiver on a sheet, along with state
+// and controls for seeing and manipulating the quiver.
+function makeSheetUI(quiver, canvas, options, controls) {
+    options = override({adding:      true,
+                        multiplying: true},
+                       options);
+
+    var sheet = makeSheet(canvas, options);
+
+    var minSelectionDistance2 = Math.pow(minSelectionDistance / sheet.scale, 2);
+    var maxClickDistance2     = Math.pow(maxClickDistance / sheet.scale, 2);
+
+    var selection = [];
+
+    function show() {
+        var ctx = sheet.ctx;
+        ctx.save();
+        sheet.clear();
+
+        ctx.save();
+        hand.dragGrid();
+        sheet.drawGrid();
+        ctx.fillStyle = 'red';
+        selection.forEach(showArrowSelected);
+        ctx.restore();
+
+        hand.show();
+
+        [zeroArrow, oneArrow].forEach(showArrow);
+        quiver.getArrows().forEach(showArrowAsMade);
+
+        ctx.restore();
+    }
+
+    function showArrowAsMade(arrow) {
+        arrow.op.showProvenance(arrow, sheet);
+        showArrow(arrow);
+    }
+
+    function showArrowSelected(arrow) {
+        sheet.drawDot(arrow.at, selectedDotRadius);
+    }
+
+    function showArrow(arrow) {
+        sheet.ctx.fillStyle = arrow.op.color;
+        sheet.drawDot(arrow.at, dotRadius);
+        sheet.drawText(arrow.at, arrow.label, arrow.op.labelOffset);
+    }
+
+    function onStateChange() {
+    }
+
+    function isCandidatePick(at, arrow) {
+        return distance2(at, arrow.at) <= minSelectionDistance2;
+    }
+
+    // TODO: make a list of constants, probably
+    var zeroArrow = quiver.add({op: constantOp, at: zero});
+    var oneArrow  = quiver.add({op: constantOp, at: one});
+
+    var emptyHand = {
+        moveFromStart: noOp,
+        onMove: noOp,
+        onEnd: noOp,
+        dragGrid: noOp,
+        show: noOp,
+    };
+
+    function makeNonHand(startAt) {
+        var strayed = false;
+        function moveFromStart(offset) {
+            strayed = strayed || maxClickDistance2 < distance2(zero, offset);
+        }
+        function onEnd() {
+            if (!strayed) onClick(startAt); // XXX or take from where it ends?
+        }
+        return {
+            moveFromStart: moveFromStart,
+            onMove: noOp,
+            onEnd: onEnd,
+            dragGrid: noOp,
+            show: noOp
+       };
+    }
+
+    function onClick(at) {
+        var choice = pickTarget(at, quiver.getArrows());
+        if (choice !== null) {
+            toggleSelection(choice);
+        } else {
+            quiver.add({op: variableOp, at: at});
+        }
+    }
+
+    // Select arrow unless already selected, in which case unselect it.
+    function toggleSelection(arrow) {
+        assert(0 <= selection.length && selection.length <= 1);
+        if (arrow === selection[0]) {
+            selection = [];
+        } else {
+            selection = [arrow];
+        }
+    }
+
+    function perform(op, at) {
+        var target = pickTarget(at, quiver.getArrows()); // TODO: also the constants
+        if (target !== null) {
+            selection = selection.map(function(argument) {
+                return quiver.constructArrow(op, argument, target);
+            });
+            onStateChange();
+        }
+    }
+
+    function pickTarget(at, arrows) {
+        return pickClosestTo(at, arrows.filter(function(arrow) {
+            return isCandidatePick(at, arrow);
+        }));
+    }
+
+    function pickClosestTo(at, candidates) {
+        var result = null;
+        candidates.forEach(function(arrow, i) {
+            var d2 = distance2(at, arrow.at);
+            if (result === null || d2 < distance2(at, result.at)) {
+                result = arrow;
+            }
+        });
+        return result;
+    }
+
+    function chooseHand(at) {
+        var target = pickTarget(at, quiver.getFreeArrows());
+        if (target !== null) {
+            return makeMoverHand(at, target, quiver);
+        } else if (options.adding && isCandidatePick(at, zeroArrow)) {
+            return makeAddHand(sheet, at, perform);
+        } else if (options.multiplying && isCandidatePick(at, oneArrow)) {
+            return makeMultiplyHand(sheet, at, perform);
+        } else {
+            return makeNonHand(at);
+        }
+    }
+
+    var hand = emptyHand;
+    var handStartedAt;
+
+    addPointerListener(canvas, {
+        onStart: function(xy) {
+            handStartedAt = sheet.pointFromXY(xy);
+            hand = chooseHand(handStartedAt);
+            show();
+        },
+        onMove: function(xy) {
+            if (handStartedAt === undefined) return;
+            hand.moveFromStart(sub(sheet.pointFromXY(xy), handStartedAt));
+            hand.onMove();
+            show();
+        },
+        onEnd: function(xy) {
+            assert(handStartedAt !== undefined);
+            hand.moveFromStart(sub(sheet.pointFromXY(xy), handStartedAt));
+            hand.onEnd();
+            hand = emptyHand;
+            show();
+            handStartedAt = undefined;
+        },
+    });
+
+    return {
+        show: show,
+    };
+}
+
+function addPointerListener(canvas, listener) {
+
+    var prevTouch = null;
+
+    function onTouchstart(event) {
+        event.preventDefault();     // to disable mouse events
+        if (event.touches.length === 1) {
+            prevTouch = touchCoords(event.touches[0]);
+            listener.onStart(prevTouch);
+        }
+    }
+
+    function onTouchmove(event) {
+        if (event.touches.length === 1) {
+            prevTouch = touchCoords(event.touches[0]);
+            listener.onMove(prevTouch);
+        }
+    }
+
+    function onTouchend(event) {
+        if (event.touches.length === 0) {
+            listener.onEnd(prevTouch);
+        } else {
+            onTouchmove(event);
+        }
+        prevTouch = null;
+    }
+
+    canvas.addEventListener('touchstart', onTouchstart);
+    canvas.addEventListener('touchmove',  onTouchmove);
+    canvas.addEventListener('touchend',   onTouchend);
+
+    canvas.addEventListener('mousedown', leftButtonOnly(mouseHandler(canvas, listener.onStart)));
+    canvas.addEventListener('mousemove', mouseHandler(canvas, listener.onMove));
+    canvas.addEventListener('mouseup',   mouseHandler(canvas, listener.onEnd));
+}
+
 var constantOp = {
     color: 'blue',
     labelOffset: {x: -12, y: 6},
@@ -280,3 +502,37 @@ function computeSpiralArc(u, v, uv) {
             mul(u, h7),
             uv];
 }
+
+// XXX review the touch API, use clientX etc. instead?
+function touchCoords(canvas, touch) {
+    return canvasCoords(canvas, event.touches[0].pageX, event.touches[0].pageY);
+}
+
+function mouseCoords(canvas, event) {
+    return canvasCoords(canvas, event.clientX, event.clientY);
+}
+
+function canvasCoords(canvas, pageX, pageY) {
+    var canvasBounds = canvas.getBoundingClientRect();
+    return {x: pageX - canvasBounds.left,
+            y: pageY - canvasBounds.top};
+}
+
+function mouseHandler(canvas, handler) {
+    return function(event) { handler(mouseCoords(canvas, event)); };
+}
+
+function leftButtonOnly(handler) {
+    return function(event) {
+        if (event.button === 0) { // left mouse button
+            handler(event);
+        }
+    };
+}
+
+function assert(claim) {
+    if (!claim) {
+        throw new Error("Liar");
+    }
+}
+
