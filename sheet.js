@@ -19,6 +19,11 @@ function onLoad() {
     sheet.drawLine(one, {re: 2, im: 1});
     sheet.drawText(one, '1', {x: -14, y: 10});
     sheet.drawSpiral(one, {re: 2, im: 1}, {re: 2, im: 1});
+    console.log(sheet.pointFromXY({x: 400, y: 0}));
+
+    var i = quiver.add({op: constantOp, at: {re: 0, im: 1}});
+    sheet.drawDot(i.at, dotRadius);
+    sheet.drawText(i.at, i.label, i.op.labelOffset);
 }
 
 // A quiver is a collection of arrows, with dependencies between some of them.
@@ -198,6 +203,25 @@ function makeSheet(canvas, options) {
         scale: scale,
         translate: translate,
     };
+}
+
+var constantOp = {
+    color: 'blue',
+    labelOffset: {x: -12, y: 6},
+    label: function(arrow) {
+        var z = arrow.at;
+        if      (z.im === 0) return '' + z.re;
+        else if (z.re === 0) return fmtImag(z.im);
+        else                 return '' + z.re + '+' + fmtImag(z.im);
+    },
+    recompute: noOp,
+    showProvenance: noOp,
+};
+
+function fmtImag(im) {
+    var s = '';
+    if (im !== 1) s += im;
+    return s + 'i';
 }
 
 
