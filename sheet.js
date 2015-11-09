@@ -12,7 +12,6 @@ var quiver;                     // for debug
 
 function onLoad() {
     quiver = makeQuiver();
-    quiver.add({op: variableOp, at: add(one, one)});
     var ui = makeSheetUI(quiver, canvas, {}, {});
     ui.show();
 }
@@ -462,6 +461,23 @@ var variableOp = {
         sheet.drawSpiral(one, arrow.at, arrow.at);
     }
 };
+
+function makeMoverHand(startPoint, arrow, quiver) {
+    var startAt = arrow.at;
+    function moveFromStart(offset) {
+        arrow.at = add(startAt, offset);
+    }
+    function onMove() {
+        quiver.onMove();
+    }
+    return {
+        moveFromStart: moveFromStart,
+        onMove: onMove,
+        onEnd: onMove,     // TODO: add to the undo stack
+        dragGrid: noOp,
+        show: noOp,
+    };
+}
 
 
 // Helpers
