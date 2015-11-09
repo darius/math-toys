@@ -24,6 +24,10 @@ function onLoad() {
     var i = quiver.add({op: constantOp, at: {re: 0, im: 1}});
     sheet.drawDot(i.at, dotRadius);
     sheet.drawText(i.at, i.label, i.op.labelOffset);
+
+    var v = quiver.add({op: variableOp, at: {re: 2.1, im: -1}});
+    sheet.drawDot(v.at, dotRadius);
+    sheet.drawText(v.at, v.label, v.op.labelOffset);
 }
 
 // A quiver is a collection of arrows, with dependencies between some of them.
@@ -223,6 +227,19 @@ function fmtImag(im) {
     if (im !== 1) s += im;
     return s + 'i';
 }
+
+var variableOp = {
+    color: 'black',
+    labelOffset: {x: 6, y: -14},
+    label: function(arrow, quiver) {
+        return String.fromCharCode(97 + quiver.getFreeArrows().length);
+    },
+    recompute: noOp,
+    showProvenance: function(arrow, sheet) { // XXX fix the caller
+        sheet.drawLine(zero, arrow.at);
+        sheet.drawSpiral(one, arrow.at, arrow.at);
+    }
+};
 
 
 // Helpers
