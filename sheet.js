@@ -157,7 +157,7 @@ function makeSheet(canvas, options) {
         ctx.strokeStyle = 'grey';
         ctx.lineWidth = 1;
         for (i = 1; (i-1) * scale <= right; ++i) { // XXX hack
-            ctx.globalAlpha = .25;
+            ctx.globalAlpha = 0.25;
             for (j = 1; j <= 9; ++j) {
                 gridLines((i-1 + j/10) * scale, bottom, (i-1 + j/10) * scale, top);
             }
@@ -165,7 +165,7 @@ function makeSheet(canvas, options) {
             gridLines(i * scale, bottom, i * scale, top);
         }
         for (i = 1; (i-1) * scale <= top; ++i) { // XXX hack
-            ctx.globalAlpha = .25;
+            ctx.globalAlpha = 0.25;
             for (j = 1; j <= 9; ++j) {
                 gridLines(left, (i-1 + j/10) * scale, right, (i-1 + j/10) * scale);
             }
@@ -191,7 +191,7 @@ function makeSheet(canvas, options) {
     }
 
     function gridLine(x0, y0, x1, y1) {
-        drawLineXY(x0 - .5, y0 - .5, x1 - .5, y1 - .5); // - .5 for sharp grid lines
+        drawLineXY(x0 - 0.5, y0 - 0.5, x1 - 0.5, y1 - 0.5); // - 0.5 for sharp grid lines
     }
 
     function drawLineXY(x0, y0, x1, y1) {
