@@ -361,14 +361,14 @@ function addPointerListener(canvas, listener) {
     function onTouchstart(event) {
         event.preventDefault();     // to disable mouse events
         if (event.touches.length === 1) {
-            listener.onStart(touchCoords(event.touches[0]));
+            listener.onStart(touchCoords(canvas, event.touches[0]));
         }
     }
 
     function onTouchmove(event) {
         if (event.touches.length === 1) {
             // XXX need to track by touch identifier rather than array index
-            listener.onMove(touchCoords(event.touches[0]));
+            listener.onMove(touchCoords(canvas, event.touches[0]));
         }
     }
 
