@@ -8,36 +8,6 @@ var minSelectionDistance = 20;
 var dotRadius = 3;
 var selectedDotRadius = 10;
 
-var quiver;                     // for debug
-
-function onLoad() {
-    quiver = makeQuiver();
-    var ui = makeSheetUI(quiver, canvas, {}, {});
-    ui.show();
-}
-
-function tempTest() {
-    var sheet = makeSheet(canvas);
-    sheet.drawGrid();
-    sheet.ctx.lineWidth = 1;
-    sheet.ctx.strokeStyle = 'black';
-    sheet.ctx.fillStyle = 'blue';
-    sheet.drawDot(one, 3);
-    sheet.drawLine(one, {re: 2, im: 1});
-    sheet.drawText(one, '1', {x: -14, y: 10});
-    sheet.drawSpiral(one, {re: 2, im: 1}, {re: 2, im: 1});
-    console.log(sheet.pointFromXY({x: 400, y: 0}));
-
-    var i = quiver.add({op: constantOp, at: {re: 0, im: 1}});
-    sheet.drawDot(i.at, dotRadius);
-    sheet.drawText(i.at, i.label, i.op.labelOffset);
-
-    var v = quiver.add({op: variableOp, at: {re: 2.1, im: -1}});
-    sheet.drawDot(v.at, dotRadius);
-    sheet.drawText(v.at, v.label, v.op.labelOffset);
-}
-
-
 // A quiver is a collection of arrows, with dependencies between some of them.
 // The arrows can move, and can be added or removed from the collection.
 // It's the 'model' with respect to the sheet UI.
