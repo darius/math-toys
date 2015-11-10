@@ -304,14 +304,17 @@ function makeSheetUI(quiver, canvas, options, controls) {
         } else {
             selection.push(arrow);
         }
+        assert(0 <= selection.length && selection.length <= 1);
     }
 
     function perform(op, at) {
         var target = pickTarget(at, quiver.getArrows()); // TODO: also the constants
         if (target !== null) {
+            assert(0 <= selection.length && selection.length <= 1);
             selection.forEach(function(argument, i) {
                 selection[i] = quiver.add({op: op, arg1: argument, arg2: target});
             });
+            assert(0 <= selection.length && selection.length <= 1);
             onStateChange();
         }
     }
@@ -338,9 +341,9 @@ function makeSheetUI(quiver, canvas, options, controls) {
         if (target !== null) {
             return makeMoverHand(at, target, quiver);
         } else if (options.adding && isCandidatePick(at, zeroArrow)) {
-            return makeAddHand(sheet, selection, at, perform);
+            return makeAddHand(sheet, selection, perform);
         } else if (options.multiplying && isCandidatePick(at, oneArrow)) {
-            return makeMultiplyHand(sheet, selection, at, perform);
+            return makeMultiplyHand(sheet, selection, perform);
         } else {
             return emptyHand;
         }
@@ -468,7 +471,7 @@ function makeMoverHand(startPoint, arrow, quiver) {
     };
 }
 
-function makeAddHand(sheet, selection, startPoint, perform) {
+function makeAddHand(sheet, selection, perform) {
     var adding = zero;
     function moveFromStart(offset) {
         adding = offset;
@@ -493,6 +496,31 @@ function makeAddHand(sheet, selection, startPoint, perform) {
     };
 }
 
+function makeMultiplyHand(sheet, selection, perform) {
+    var multiplying = one;
+    function moveFromStart(offset) {
+        multiplying = add(one, offset);
+    }
+    function onEnd() {
+        perform(mulOp, multiplying);
+    }
+    return {
+        moveFromStart: moveFromStart,
+        onMove: noOp,
+        onEnd: onEnd,
+        dragGrid: function() {
+            sheet.ctx.transform(multiplying.re, multiplying.im, -multiplying.im, multiplying.re, 0, 0);
+        },
+        show: function() {
+            sheet.ctx.strokeStyle = 'green';
+            sheet.drawSpiral(one, multiplying, multiplying);
+            selection.forEach(function(arrow) {
+                sheet.drawSpiral(arrow.at, multiplying, mul(arrow.at, multiplying));
+            });
+        }
+    };
+}
+
 var addOp = {
     color: 'black',
     labelOffset: {x: 0, y: 0},
@@ -508,6 +536,24 @@ var addOp = {
     },
     showProvenance: function(arrow, sheet) {
         sheet.drawLine(arrow.arg1.at, arrow.at);
+    },
+};
+
+var mulOp = {
+    color: 'black',
+    labelOffset: {x: 0, y: 0},
+    label: function(arrow) {
+        if (arrow.arg1 === arrow.arg2) {
+            return parenthesize(arrow.arg1.label) + '^2';
+        } else {
+            return infixLabel(arrow.arg1, '', arrow.arg2);
+        }
+    },
+    recompute: function(arrow) {
+        arrow.at = mul(arrow.arg1.at, arrow.arg2.at);
+    },
+    showProvenance: function(arrow, sheet) {
+        sheet.drawSpiral(arrow.arg1.at, arrow.arg2.at, arrow.at);
     },
 };
 
