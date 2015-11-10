@@ -300,17 +300,17 @@ function makeSheetUI(quiver, canvas, options, controls) {
     function toggleSelection(arrow) {
         assert(0 <= selection.length && selection.length <= 1);
         if (arrow === selection[0]) {
-            selection = [];
+            selection.pop();
         } else {
-            selection = [arrow];
+            selection.push(arrow);
         }
     }
 
     function perform(op, at) {
         var target = pickTarget(at, quiver.getArrows()); // TODO: also the constants
         if (target !== null) {
-            selection = selection.map(function(argument) {
-                return quiver.add({op: op, arg1: argument, arg2: target});
+            selection.forEach(function(argument, i) {
+                selection[i] = quiver.add({op: op, arg1: argument, arg2: target});
             });
             onStateChange();
         }
@@ -338,9 +338,9 @@ function makeSheetUI(quiver, canvas, options, controls) {
         if (target !== null) {
             return makeMoverHand(at, target, quiver);
         } else if (options.adding && isCandidatePick(at, zeroArrow)) {
-            return makeAddHand(sheet, at, perform);
+            return makeAddHand(sheet, selection, at, perform);
         } else if (options.multiplying && isCandidatePick(at, oneArrow)) {
-            return makeMultiplyHand(sheet, at, perform);
+            return makeMultiplyHand(sheet, selection, at, perform);
         } else {
             return emptyHand;
         }
@@ -468,7 +468,7 @@ function makeMoverHand(startPoint, arrow, quiver) {
     };
 }
 
-function makeAddHand(sheet, startPoint, perform) {
+function makeAddHand(sheet, selection, startPoint, perform) {
     var adding = zero;
     function moveFromStart(offset) {
         adding = offset;
@@ -486,6 +486,9 @@ function makeAddHand(sheet, startPoint, perform) {
         show: function() {
             sheet.ctx.strokeStyle = 'magenta';
             sheet.drawLine(zero, adding);
+            selection.forEach(function(arrow) {
+                sheet.drawLine(arrow.at, add(arrow.at, adding));
+            });
         }
     };
 }
@@ -504,7 +507,7 @@ var addOp = {
         arrow.at = add(arrow.arg1.at, arrow.arg2.at);
     },
     showProvenance: function(arrow, sheet) {
-        sheet.drawLine(arrow.arg1, arrow.at);
+        sheet.drawLine(arrow.arg1.at, arrow.at);
     },
 };
 
