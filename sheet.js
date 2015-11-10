@@ -523,7 +523,7 @@ function makeMultiplyHand(sheet, selection, perform) {
 
 var addOp = {
     color: 'black',
-    labelOffset: {x: 0, y: 0},
+    labelOffset: {x: 6, y: -14},
     label: function(arrow) {
         if (arrow.arg1 === arrow.arg2) {
             return '2' + parenthesize(arrow.arg1.label);
@@ -541,7 +541,7 @@ var addOp = {
 
 var mulOp = {
     color: 'black',
-    labelOffset: {x: 0, y: 0},
+    labelOffset: {x: 6, y: -14},
     label: function(arrow) {
         if (arrow.arg1 === arrow.arg2) {
             return parenthesize(arrow.arg1.label) + '^2';
