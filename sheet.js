@@ -383,9 +383,8 @@ function makeSheetUI(quiver, canvas, options, controls) {
             hand.onMove();
             show();
         },
-        onEnd: function(xy) {
+        onEnd: function() {
             assert(handStartedAt !== undefined);
-            hand.moveFromStart(sub(sheet.pointFromXY(xy), handStartedAt));
             hand.onEnd();
             hand = emptyHand;
             show();
@@ -400,31 +399,26 @@ function makeSheetUI(quiver, canvas, options, controls) {
 
 function addPointerListener(canvas, listener) {
 
-    var prevTouch = null;
-
     function onTouchstart(event) {
         event.preventDefault();     // to disable mouse events
         if (event.touches.length === 1) {
-            prevTouch = touchCoords(event.touches[0]);
-            listener.onStart(prevTouch);
+            listener.onStart(touchCoords(event.touches[0]));
         }
     }
 
     function onTouchmove(event) {
         if (event.touches.length === 1) {
             // XXX need to track by touch identifier rather than array index
-            prevTouch = touchCoords(event.touches[0]);
-            listener.onMove(prevTouch);
+            listener.onMove(touchCoords(event.touches[0]));
         }
     }
 
     function onTouchend(event) {
         if (event.touches.length === 0) {
-            listener.onEnd(prevTouch);
+            listener.onEnd();
         } else {
             onTouchmove(event);
         }
-        prevTouch = null;
     }
 
     canvas.addEventListener('touchstart', onTouchstart);
@@ -433,7 +427,10 @@ function addPointerListener(canvas, listener) {
 
     canvas.addEventListener('mousedown', leftButtonOnly(mouseHandler(canvas, listener.onStart)));
     canvas.addEventListener('mousemove', mouseHandler(canvas, listener.onMove));
-    canvas.addEventListener('mouseup',   mouseHandler(canvas, listener.onEnd));
+    canvas.addEventListener('mouseup',   mouseHandler(canvas, function(coords) {
+        listener.onMove(coords);
+        listener.onEnd();
+    }));
 }
 
 var constantOp = {
