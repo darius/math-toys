@@ -306,6 +306,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
 
     function onClick(at) {
         var choice = pickTarget(at, quiver.getArrows());
+        console.log('choice', choice);
         if (choice !== null) {
             toggleSelection(choice);
         } else {
@@ -321,10 +322,12 @@ function makeSheetUI(quiver, canvas, options, controls) {
         } else {
             selection = [arrow];
         }
+        console.log('sel', selection);
     }
 
     function perform(op, at) {
         var target = pickTarget(at, quiver.getArrows()); // TODO: also the constants
+        console.log('perform target', target);
         if (target !== null) {
             selection = selection.map(function(argument) {
                 return quiver.constructArrow(op, argument, target);
@@ -347,11 +350,13 @@ function makeSheetUI(quiver, canvas, options, controls) {
                 result = arrow;
             }
         });
+        console.log('closest to', at, candidates.length, 'is', result);
         return result;
     }
 
     function chooseHand(at) {
         var target = pickTarget(at, quiver.getFreeArrows());
+        console.log('chooseHand target', target);
         if (target !== null) {
             return makeMoverHand(at, target, quiver);
         } else if (options.adding && isCandidatePick(at, zeroArrow)) {
@@ -407,6 +412,7 @@ function addPointerListener(canvas, listener) {
 
     function onTouchmove(event) {
         if (event.touches.length === 1) {
+            // XXX need to track by touch identifier rather than array index
             prevTouch = touchCoords(event.touches[0]);
             listener.onMove(prevTouch);
         }
@@ -477,6 +483,56 @@ function makeMoverHand(startPoint, arrow, quiver) {
         dragGrid: noOp,
         show: noOp,
     };
+}
+
+function makeAddHand(sheet, startPoint, perform) {
+    var adding = zero;
+    function moveFromStart(offset) {
+        adding = offset;
+    }
+    function onEnd() {
+        perform(addOp, adding);
+    }
+    return {
+        moveFromStart: moveFromStart,
+        onMove: noOp,
+        onEnd: onEnd,
+        dragGrid: function() {
+            sheet.translate(adding);
+        },
+        show: function() {
+            sheet.ctx.strokeStyle = 'magenta';
+            sheet.drawLine(zero, adding);
+        }
+    };
+}
+
+var addOp = {
+    color: 'black',
+    labelOffset: {x: 0, y: 0},
+    label: function(arrow) {
+        if (arrow.arg1 === arrow.arg2) {
+            return '2' + parenthesize(arrow.arg1.label);
+        } else {
+            return infixLabel(arrow.arg1, '+', arrow.arg2);
+        }
+    },
+    recompute: function(arrow) {
+        arrow.at = add(arrow.arg1, arrow.arg2);
+    },
+    showProvenance: function(arrow, sheet) {
+        sheet.drawLine(arrow.arg1, arrow.at);
+    },
+};
+
+function infixLabel(arg1, opLabel, arg2) {
+    var L = parenthesize(arg1.label);
+    var R = parenthesize(arg2.label);
+    return L + opLabel + R;
+}
+
+function parenthesize(name) {
+    return name.length === 1 ? name : '(' + name + ')';
 }
 
 
