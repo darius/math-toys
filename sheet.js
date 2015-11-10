@@ -287,26 +287,8 @@ function makeSheetUI(quiver, canvas, options, controls) {
         show: noOp,
     };
 
-    function makeNonHand(startAt) {
-        var strayed = false;
-        function moveFromStart(offset) {
-            strayed = strayed || maxClickDistance2 < distance2(zero, offset);
-        }
-        function onEnd() {
-            if (!strayed) onClick(startAt); // XXX or take from where it ends?
-        }
-        return {
-            moveFromStart: moveFromStart,
-            onMove: noOp,
-            onEnd: onEnd,
-            dragGrid: noOp,
-            show: noOp
-       };
-    }
-
     function onClick(at) {
         var choice = pickTarget(at, quiver.getArrows());
-        console.log('choice', choice);
         if (choice !== null) {
             toggleSelection(choice);
         } else {
@@ -322,15 +304,13 @@ function makeSheetUI(quiver, canvas, options, controls) {
         } else {
             selection = [arrow];
         }
-        console.log('sel', selection);
     }
 
     function perform(op, at) {
         var target = pickTarget(at, quiver.getArrows()); // TODO: also the constants
-        console.log('perform target', target);
         if (target !== null) {
             selection = selection.map(function(argument) {
-                return quiver.constructArrow(op, argument, target);
+                return quiver.add({op: op, arg1: argument, arg2: target});
             });
             onStateChange();
         }
@@ -350,13 +330,11 @@ function makeSheetUI(quiver, canvas, options, controls) {
                 result = arrow;
             }
         });
-        console.log('closest to', at, candidates.length, 'is', result);
         return result;
     }
 
     function chooseHand(at) {
         var target = pickTarget(at, quiver.getFreeArrows());
-        console.log('chooseHand target', target);
         if (target !== null) {
             return makeMoverHand(at, target, quiver);
         } else if (options.adding && isCandidatePick(at, zeroArrow)) {
@@ -364,28 +342,36 @@ function makeSheetUI(quiver, canvas, options, controls) {
         } else if (options.multiplying && isCandidatePick(at, oneArrow)) {
             return makeMultiplyHand(sheet, at, perform);
         } else {
-            return makeNonHand(at);
+            return emptyHand;
         }
     }
 
     var hand = emptyHand;
     var handStartedAt;
+    var strayed;
 
     addPointerListener(canvas, {
         onStart: function(xy) {
             handStartedAt = sheet.pointFromXY(xy);
+            strayed = false;
             hand = chooseHand(handStartedAt);
             show();
         },
         onMove: function(xy) {
             if (handStartedAt === undefined) return;
-            hand.moveFromStart(sub(sheet.pointFromXY(xy), handStartedAt));
+            var at = sheet.pointFromXY(xy);
+            strayed = strayed || maxClickDistance2 < distance2(handStartedAt, at);
+            hand.moveFromStart(sub(at, handStartedAt));
             hand.onMove();
             show();
         },
         onEnd: function() {
             assert(handStartedAt !== undefined);
-            hand.onEnd();
+            if (!strayed) {
+                onClick(handStartedAt); // XXX or take from where it ends?
+            } else {
+                hand.onEnd();
+            }
             hand = emptyHand;
             show();
             handStartedAt = undefined;
@@ -515,7 +501,7 @@ var addOp = {
         }
     },
     recompute: function(arrow) {
-        arrow.at = add(arrow.arg1, arrow.arg2);
+        arrow.at = add(arrow.arg1.at, arrow.arg2.at);
     },
     showProvenance: function(arrow, sheet) {
         sheet.drawLine(arrow.arg1, arrow.at);
