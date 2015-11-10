@@ -297,7 +297,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
 
     function pickClosestTo(at, candidates) {
         var result = null;
-        candidates.forEach(function(arrow, i) {
+        candidates.forEach(function(arrow) {
             var d2 = distance2(at, arrow.at);
             if (result === null || d2 < distance2(at, result.at)) {
                 result = arrow;
@@ -309,7 +309,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
     function chooseHand(at) {
         var target = pickTarget(at, quiver.getFreeArrows());
         if (target !== null) {
-            return makeMoverHand(at, target, quiver);
+            return makeMoverHand(target, quiver);
         } else if (options.adding && isCandidatePick(at, zeroArrow)) {
             return makeAddHand(sheet, selection, perform);
         } else if (options.multiplying && isCandidatePick(at, oneArrow)) {
@@ -424,7 +424,7 @@ var variableOp = {
     }
 };
 
-function makeMoverHand(startPoint, arrow, quiver) {
+function makeMoverHand(arrow, quiver) {
     var startAt = arrow.at;
     function moveFromStart(offset) {
         arrow.at = add(startAt, offset);
@@ -579,7 +579,7 @@ function computeSpiralArc(u, v, uv) {
 
 // XXX review the touch API, use clientX etc. instead?
 function touchCoords(canvas, touch) {
-    return canvasCoords(canvas, event.touches[0].pageX, event.touches[0].pageY);
+    return canvasCoords(canvas, touch.pageX, touch.pageY);
 }
 
 function mouseCoords(canvas, event) {
