@@ -267,14 +267,9 @@ function makeSheetUI(quiver, canvas, options, controls) {
 
     // Select arrow unless already selected, in which case unselect it.
     function toggleSelection(arrow) {
-        assert(arrow);
         assert(0 <= selection.length && selection.length <= 1);
-        if (arrow === selection[0]) {
-            selection.pop();
-        } else {
-            selection.push(arrow);
-        }
-        assert(0 <= selection.length && selection.length <= 1);
+        if (arrow !== selection[0]) selection.splice(0, 1, arrow);
+        else selection.splice(0, 1);
     }
 
     function perform(op, at) {
