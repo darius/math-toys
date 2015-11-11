@@ -193,7 +193,8 @@ function makeSheet(canvas, options) {
 // and controls for seeing and manipulating the quiver.
 function makeSheetUI(quiver, canvas, options, controls) {
     options = override({adding:      true,
-                        multiplying: true},
+                        multiplying: true,
+                        showGrid:    true},
                        options);
 
     var sheet = makeSheet(canvas, options);
@@ -210,7 +211,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
 
         ctx.save();
         hand.dragGrid();
-        sheet.drawGrid();
+        if (options.showGrid) sheet.drawGrid();
         ctx.fillStyle = 'red';
         selection.forEach(showArrowSelected);
         ctx.restore();
