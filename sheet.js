@@ -176,6 +176,7 @@ function makeSheet(canvas, options) {
     }
 
     return {
+        canvas: canvas,
         clear: clear,
         ctx: ctx,
         drawDot: drawDot,
