@@ -23,7 +23,6 @@ function onLoad() {
 
     function onChange(event) {
         if (!watching) return;
-        console.log('change', event.tag);
         if (event.tag === 'add') {
             addSheet(event.arrow);
         } else {
@@ -39,8 +38,8 @@ var pairs = [];
 
 function addSheet(arrow) {
     var canvas = document.createElement('canvas');
-    canvas.width = 400;
-    canvas.height = 400;
+    canvas.width = canvas1.width;
+    canvas.height = canvas1.height;
     document.getElementById('sheets').appendChild(canvas);
     document.getElementById('sheets').appendChild(document.createTextNode(' '));
     var sheet = makeSheet(canvas);
@@ -59,7 +58,7 @@ function update() {
         sheet.ctx.strokeStyle = 'black';
         var f;
         if (arrow.op === variableOp) {
-            var c = arrow.at;       // XXX only for variableOp
+            var c = arrow.at;
             f = function(z) { return c; };
         } else {
             f = function(z) {
