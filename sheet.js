@@ -14,6 +14,7 @@ var selectedDotRadius = 10;
 function makeQuiver() {
 
     var arrows = [];
+    var watchers = [];
 
     function isEmpty() {
         return 0 < arrows.length;
@@ -31,11 +32,21 @@ function makeQuiver() {
         arrow.label = arrow.op.label(arrow, quiver);
         arrows.push(arrow);
         recompute(arrow);
+        notify({tag: 'add', arrow: arrow});
         return arrow;
+    }
+
+    function addWatcher(watcher) {
+        watchers.push(watcher);
     }
 
     function onMove() {
         arrows.forEach(recompute);
+        notify({tag: 'move'});
+    }
+
+    function notify(event) {
+        watchers.forEach(function(watch) { watch(event); });
     }
 
     function recompute(arrow) {
@@ -44,10 +55,10 @@ function makeQuiver() {
 
     var quiver = {
         add: add,
+        addWatcher: addWatcher,
         isEmpty: isEmpty,
         getArrows: getArrows,
         getFreeArrows: getFreeArrows,
-        moveTo: moveTo,
         onMove: onMove,
     };
     return quiver;

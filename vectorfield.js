@@ -1,19 +1,78 @@
-// Display a C-C map as a vector field.
+// Display a C->C map as a vector field.
 
 'use strict';
 
-var sheet;
+var quiver, sheet;
+var xVar;
+
 function onLoad() {
-    sheet = makeSheet(canvas);
+    quiver = makeQuiver();
+    xVar = quiver.add({op: variableOp, at: {re: 1, im: 1}});
+    xVar.label = 'x';
+    var ui = makeSheetUI(quiver, canvas1, {}, {});
+    ui.show();
+
+    sheet = makeSheet(canvas2);
     sheet.drawGrid();
     sheet.ctx.strokeStyle = 'black';
     drawMap(sheet,
-            function(z) {
-//                return mul(z, z);
-                return mul(z, mul(z, z));
-                return mul(z, mul(z, mul(z, z)));
-            },
+            function(z) { return z; },
             0.05, 15);
+
+    quiver.addWatcher(onChange);
+
+    function onChange(event) {
+        if (!watching) return;
+        console.log('change', event.tag);
+        if (event.tag === 'add') {
+            addSheet(event.arrow);
+        } else {
+            update();
+        }
+    }
+}
+
+var watching = true;
+
+// Pairs of [arrow, sheet].
+var pairs = [];
+
+function addSheet(arrow) {
+    var canvas = document.createElement('canvas');
+    canvas.width = 400;
+    canvas.height = 400;
+    document.getElementById('sheets').appendChild(canvas);
+    document.getElementById('sheets').appendChild(document.createTextNode(' '));
+    var sheet = makeSheet(canvas);
+    pairs.push([arrow, sheet]);
+    update();
+}
+
+function update() {
+    var savedAt = xVar.at;
+    watching = false;
+    pairs.forEach(function(p) {
+        var arrow = p[0];
+        var sheet = p[1];
+        sheet.clear();
+        sheet.drawGrid();
+        sheet.ctx.strokeStyle = 'black';
+        var f;
+        if (arrow.op === variableOp) {
+            var c = arrow.at;       // XXX only for variableOp
+            f = function(z) { return c; };
+        } else {
+            f = function(z) {
+                xVar.at = z;
+                quiver.onMove();
+                return arrow.at;
+            }
+        }
+        drawMap(sheet, f, 0.05, 15);
+    });        
+    xVar.at = savedAt;     // XXX ugh hack
+    quiver.onMove();
+    watching = true;
 }
 
 function drawMap(sheet, f, vectorScale, spacing) {

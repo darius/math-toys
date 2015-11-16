@@ -2,21 +2,22 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
   <meta http-equiv="encoding" content="utf-8">
+  <link rel="stylesheet" type="text/css" href="vectorfield.css">
 </head>
 
 <body bgcolor="#fff" onload="onLoad()">
-  <canvas id="canvas1" width="800" height="800"
-          style="background-color: #eee"
-          >
+  <canvas id="canvas1" width="400" height="400">
   </canvas>
+  <canvas id="canvas2" width="400" height="400">
+  </canvas>
+  <div id="sheets"></div>
 
   <script type="text/javascript">
-    var canvas = document.getElementById("canvas1");
+    var canvas1 = document.getElementById("canvas1");
+    var canvas2 = document.getElementById("canvas2");
   </script>
   <script type="text/javascript" src="spline_interpolate.js"></script>
   <script type="text/javascript" src="complex.js"></script>
   <script type="text/javascript" src="sheet.js"></script>
   <script type="text/javascript" src="vectorfield.js"></script>
-
-  <p>Blah blah.
 </body>
