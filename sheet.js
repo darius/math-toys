@@ -396,13 +396,15 @@
             }
         }
 
+        var eventToCoords = partial(mouseCoords, canvas);
+
         canvas.addEventListener('touchstart', onTouchstart);
         canvas.addEventListener('touchmove',  onTouchmove);
         canvas.addEventListener('touchend',   onTouchend);
 
-        canvas.addEventListener('mousedown', leftButtonOnly(mouseHandler(canvas, listener.onStart)));
-        canvas.addEventListener('mousemove', mouseHandler(canvas, listener.onMove));
-        canvas.addEventListener('mouseup',   mouseHandler(canvas, function(coords) {
+        canvas.addEventListener('mousedown', leftButtonOnly(compose(eventToCoords, listener.onStart)));
+        canvas.addEventListener('mousemove', compose(eventToCoords, listener.onMove));
+        canvas.addEventListener('mouseup',   compose(eventToCoords, function(coords) {
             listener.onMove(coords);
             listener.onEnd();
         }));
@@ -606,10 +608,6 @@
         var canvasBounds = canvas.getBoundingClientRect();
         return {x: pageX - canvasBounds.left,
                 y: pageY - canvasBounds.top};
-    }
-
-    function mouseHandler(canvas, handler) {
-        return function(event) { handler(mouseCoords(canvas, event)); };
     }
 
     function leftButtonOnly(handler) {
