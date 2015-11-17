@@ -68,138 +68,150 @@
     var tau = 2*Math.PI;
 
     // A sheet is a canvas displaying the complex-number plane.
-    function makeSheet(canvas, options) {
-        options = override({center:   complex.zero,
-                            font:     '12pt Georgia',
-                            realSpan: 8},
-                           options);
+    function Sheet(canvas, options) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.options = override({center:   complex.zero,
+                                 font:     '12pt Georgia',
+                                 realSpan: 8},
+                                options);
 
-        var ctx    = canvas.getContext('2d');
-        var width  = canvas.width;   // N.B. it's best if these are even
-        var height = canvas.height;
-        var left   = -width/2;
-        var right  =  width/2;
-        var bottom = -height/2;
-        var top    =  height/2;
-        var scale  = width / options.realSpan;
-
-        ctx.font = options.font;
-        ctx.translate(right, top);
-        ctx.scale(1, -1);
-
-        // Convert from canvas-relative pixel coordinates, such as from a mouse event.
-        function pointFromXY(xy) {
-            return {re: (xy.x - right) / scale, im: (top - xy.y) / scale};
-        }
-
-        if (options.center.re !== 0 || options.center.im !== 0) {
+        if (this.options.center.re !== 0 || this.options.center.im !== 0) {
             throw new Error("off-center sheet not supported yet");
         }
 
-        function clear() {
-            ctx.clearRect(left, bottom, width, height);
-        }
+        this.dims = {
+            width: canvas.width,   // N.B. it's best if these are even
+            height: canvas.height,
+            left: -canvas.width/2,
+            right:  canvas.width/2,
+            bottom: -canvas.height/2,
+            top:  canvas.height/2,
+            scale: canvas.width / this.options.realSpan
+        };
 
-        function drawDot(at, radius) {
-            ctx.beginPath();
-            ctx.arc(scale * at.re, scale * at.im, radius, 0, tau);
-            ctx.fill();
-        }
+        this.ctx.font = this.options.font;
+        this.ctx.translate(this.dims.right, this.dims.top);
+        this.ctx.scale(1, -1);
+    };
 
-        function drawLine(at1, at2) {
-            ctx.beginPath();
-            ctx.moveTo(scale * at1.re, scale * at1.im);
-            ctx.lineTo(scale * at2.re, scale * at2.im);
-            ctx.stroke();
-        }
+    Sheet.prototype = {
+        // Convert from canvas-relative pixel coordinates, such as from a mouse event.
+        pointFromXY: function(xy) {
+            return {re: (xy.x - this.dims.right) / this.dims.scale,
+                    im: (this.dims.top - xy.y) / this.dims.scale };
+        },
+
+        clear: function() {
+            this.ctx.clearRect(this.dims.left, this.dims.bottom, this.dims.width, this.dims.height);
+        },
+
+        drawDot: function(at, radius) {
+            this.ctx.beginPath();
+            this.ctx.arc(this.dims.scale * at.re,
+                         this.dims.scale * at.im,
+                         radius,
+                         0,
+                         tau);
+            this.ctx.fill();
+        },
+
+        drawLine: function(at1, at2) {
+            this.ctx.beginPath();
+            this.ctx.moveTo(this.dims.scale * at1.re, this.dims.scale * at1.im);
+            this.ctx.lineTo(this.dims.scale * at2.re, this.dims.scale * at2.im);
+            this.ctx.stroke();
+        },
 
         // N.B. textOffset is in canvas (xy) coordinates.
-        function drawText(at, text, textOffset) {
-            var x = at.re * scale + textOffset.x;
-            var y = at.im * scale + textOffset.y;
-            ctx.save();
-            ctx.scale(1, -1); // Back into left-handed coordinates so the text isn't flipped
-            ctx.fillText(text, x, -y);
-            ctx.restore();
-        }
+        drawText: function(at, text, textOffset) {
+            var x = at.re * this.dims.scale + textOffset.x;
+            var y = at.im * this.dims.scale + textOffset.y;
+            this.ctx.save();
+            this.ctx.scale(1, -1); // Back into left-handed coordinates so the text isn't flipped
+            this.ctx.fillText(text, x, -y);
+            this.ctx.restore();
+        },
 
         // Draw an arc from cnum u to uv (which should be u*v).
-        function drawSpiral(u, v, uv) {
+        drawSpiral: function(u, v, uv) {
+            var self = this;
             var zs = computeSpiralArc(u, v, uv);
             var path = [];
             zs.forEach(function(z) {
-                path.push(scale * z.re);
-                path.push(scale * z.im);
+                path.push(self.dims.scale * z.re);
+                path.push(self.dims.scale * z.im);
             });
-            drawSpline(ctx, path, 0.4, false);
-        }
 
-        function drawGrid() {
+            drawSpline(this.ctx, path, 0.4, false);
+        },
+
+        drawGrid: function() {
+            var ctx = this.ctx;
+
+            function gridLines(x0, y0, x1, y1) {
+                gridLine(x0, y0, x1, y1);
+                gridLine(-x0, -y0, -x1, -y1);
+            };
+
+            function gridLine(x0, y0, x1, y1) {
+                drawLineXY(x0 - 0.5, y0 - 0.5, x1 - 0.5, y1 - 0.5); // - 0.5 for sharp grid lines
+            };
+
+            function drawLineXY(x0, y0, x1, y1) {
+                ctx.beginPath();
+                ctx.moveTo(x0, y0);
+                ctx.lineTo(x1, y1);
+                ctx.stroke();
+            };
+
             var i, j;
             ctx.strokeStyle = 'grey';
             ctx.lineWidth = 1;
-            for (i = 1; (i-1) * scale <= right; ++i) { // XXX hack
+            for (i = 1; (i-1) * this.dims.scale <= this.dims.right; ++i) { // XXX hack
                 ctx.globalAlpha = 0.25;
                 for (j = 1; j <= 9; ++j) {
-                    gridLines((i-1 + j/10) * scale, bottom, (i-1 + j/10) * scale, top);
+                    gridLines((i-1 + j/10) * this.dims.scale,
+                              this.dims.bottom,
+                              (i-1 + j/10) * this.dims.scale,
+                              this.dims.top);
                 }
                 ctx.globalAlpha = 1;
-                gridLines(i * scale, bottom, i * scale, top);
+                gridLines(i * this.dims.scale,
+                          this.dims.bottom,
+                          i * this.dims.scale,
+                          this.dims.top);
             }
-            for (i = 1; (i-1) * scale <= top; ++i) { // XXX hack
+            for (i = 1; (i-1) * this.dims.scale <= this.dims.top; ++i) { // XXX hack
                 ctx.globalAlpha = 0.25;
                 for (j = 1; j <= 9; ++j) {
-                    gridLines(left, (i-1 + j/10) * scale, right, (i-1 + j/10) * scale);
+                    gridLines(this.dims.left,
+                              (i-1 + j/10) * this.dims.scale,
+                              this.dims.right,
+                              (i-1 + j/10) * this.dims.scale);
                 }
                 ctx.globalAlpha = 1;
-                gridLines(left, i * scale, right, i * scale);
+                gridLines(this.dims.left,
+                          i * this.dims.scale,
+                          this.dims.right,
+                          i * this.dims.scale);
             }
 
             ctx.fillStyle = 'white';
-            ctx.fillRect(left, -1, width, 3);
-            ctx.fillRect(-1, bottom, 3, height);
+            ctx.fillRect(this.dims.left, -1, this.dims.width, 3);
+            ctx.fillRect(-1, this.dims.bottom, 3, this.dims.height);
 
             ctx.strokeStyle = 'white';
             ctx.lineWidth = 3;
             ctx.beginPath();
-            ctx.arc(0, 0, scale, 0, tau, true);
+            ctx.arc(0, 0, this.dims.scale, 0, tau, true);
             ctx.closePath();
             ctx.stroke();
-        }
+        },
 
-        function gridLines(x0, y0, x1, y1) {
-            gridLine(x0, y0, x1, y1);
-            gridLine(-x0, -y0, -x1, -y1);
+        translate: function(at) {
+            this.ctx.translate(at.re * this.dims.scale, at.im * this.dims.scale);
         }
-
-        function gridLine(x0, y0, x1, y1) {
-            drawLineXY(x0 - 0.5, y0 - 0.5, x1 - 0.5, y1 - 0.5); // - 0.5 for sharp grid lines
-        }
-
-        function drawLineXY(x0, y0, x1, y1) {
-            ctx.beginPath();
-            ctx.moveTo(x0, y0);
-            ctx.lineTo(x1, y1);
-            ctx.stroke();
-        }
-
-        function translate(at) {
-            ctx.translate(at.re * scale, at.im * scale);
-        }
-
-        return {
-            canvas: canvas,
-            clear: clear,
-            ctx: ctx,
-            drawDot: drawDot,
-            drawGrid: drawGrid,
-            drawLine: drawLine,
-            drawSpiral: drawSpiral,
-            drawText: drawText,
-            pointFromXY: pointFromXY,
-            scale: scale,
-            translate: translate,
-        };
     }
 
     // A sheet UI presents a quiver on a sheet, along with state
@@ -210,10 +222,10 @@
                             showGrid:    true},
                            options);
 
-        var sheet = makeSheet(canvas, options);
+        var sheet = new Sheet(canvas, options, true);
 
-        var minSelectionDistance2 = Math.pow(minSelectionDistance / sheet.scale, 2);
-        var maxClickDistance2     = Math.pow(maxClickDistance / sheet.scale, 2);
+        var minSelectionDistance2 = Math.pow(minSelectionDistance / sheet.dims.scale, 2);
+        var maxClickDistance2     = Math.pow(maxClickDistance / sheet.dims.scale, 2);
 
         var selection = [];
 
@@ -641,7 +653,9 @@
 
     exports.sheet = {
         makeQuiver: makeQuiver,
-        makeSheet: makeSheet,
+        makeSheet: function(canvas, options) {
+            return new Sheet(canvas, options);
+        },
         makeSheetUI: makeSheetUI,
         variableOp: variableOp,
         constantOp: constantOp,

@@ -91,7 +91,7 @@ function drawMap(sheetObj, f, vectorScale, spacing) {
 
 function drawStreamline(sheetObj, z, f, vectorScale) {
     var ctx = sheetObj.ctx;
-    var scale = sheetObj.scale;
+    var scale = sheetObj.dims.scale;
     var nsteps = 10;
     for (var i = 0; i < nsteps; ++i) {
         ctx.lineWidth = (nsteps-i) * 0.5;
