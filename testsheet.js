@@ -4,7 +4,7 @@ var quiver;                     // for debug
 
 function onLoad() {
     quiver = makeQuiver();
-    var ui = makeSheetUI(quiver, canvas, {}, {});
+    var ui = makeSheetUI(quiver, canvas, { width: 800, height: 800 }, {});
     ui.show();
 }
 

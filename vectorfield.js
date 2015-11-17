@@ -4,15 +4,16 @@
 
 var quiver, sheet;
 var xVar;
+var CANVAS_WIDTH_HEIGHT = { width: 300, height: 300 };
 
 function onLoad() {
     quiver = makeQuiver();
     xVar = quiver.add({op: variableOp, at: {re: 1, im: 1}});
     xVar.label = 'x';
-    var ui = makeSheetUI(quiver, canvas1, {}, {});
+    var ui = makeSheetUI(quiver, canvas1, CANVAS_WIDTH_HEIGHT, {});
     ui.show();
 
-    sheet = makeSheet(canvas2);
+    sheet = makeSheet(canvas2, CANVAS_WIDTH_HEIGHT);
     sheet.drawGrid();
     sheet.ctx.strokeStyle = 'black';
     drawMap(sheet,
@@ -38,11 +39,9 @@ var pairs = [];
 
 function addSheet(arrow) {
     var canvas = document.createElement('canvas');
-    canvas.width = canvas1.width;
-    canvas.height = canvas1.height;
     document.getElementById('sheets').appendChild(canvas);
     document.getElementById('sheets').appendChild(document.createTextNode(' '));
-    var sheet = makeSheet(canvas);
+    var sheet = makeSheet(canvas, CANVAS_WIDTH_HEIGHT);
     pairs.push([arrow, sheet]);
     update();
 }
@@ -68,7 +67,7 @@ function update() {
             }
         }
         drawMap(sheet, f, 0.05, 15);
-    });        
+    });
     xVar.at = savedAt;     // XXX ugh hack
     quiver.onMove();
     watching = true;

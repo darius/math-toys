@@ -73,6 +73,13 @@ function makeSheet(canvas, options) {
                         realSpan: 8},
                        options);
 
+    if (options.width == null || options.height == null ) {
+        throw new Error("Pass 'width' and 'height' in options");
+    }
+
+    canvas.width = options.width;
+    canvas.height = options.height;
+
     var ctx    = canvas.getContext('2d');
     var width  = canvas.width;   // N.B. it's best if these are even
     var height = canvas.height;
@@ -165,7 +172,7 @@ function makeSheet(canvas, options) {
         ctx.closePath();
         ctx.stroke();
     }
-    
+
     function gridLines(x0, y0, x1, y1) {
         gridLine(x0, y0, x1, y1);
         gridLine(-x0, -y0, -x1, -y1);
@@ -617,4 +624,3 @@ function assert(claim) {
         throw new Error("Liar");
     }
 }
-
