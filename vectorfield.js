@@ -47,28 +47,57 @@ function addSheet(arrow) {
     update();
 }
 
+var pendingUpdates = [];
+
 function update() {
+    // Schedule pending updates round-robin style, to avoid starving
+    // the updating of the later elements of pairs.
+    pairs.filter(complement(isPending)).forEach(function (p) {
+        pendingUpdates.push(p);
+    });
+    cancelAnimationFrame(doUpdates);
+    requestAnimationFrame(doUpdates);
+}
+
+function isPending(p) {
+    return pendingUpdates.some(function(q) { return q[0] === p[0]; });
+}
+
+function complement(predicate) {
+    return function(x) { return !predicate(x); };
+}
+
+function doUpdates() {
+    if (0 < pendingUpdates.length) {
+        doUpdate(pendingUpdates[0]);
+        pendingUpdates.splice(0, 1);
+        requestAnimationFrame(doUpdates);
+    }
+}
+
+function doUpdate(pair) {
     var savedAt = xVar.at;
     watching = false;
-    pairs.forEach(function(p) {
-        var arrow = p[0];
-        var sheet = p[1];
-        sheet.clear();
-        sheet.drawGrid();
-        sheet.ctx.strokeStyle = 'black';
-        var f;
-        if (arrow.op === variableOp) {
-            var c = arrow.at;
-            f = function(z) { return c; };
-        } else {
-            f = function(z) {
-                xVar.at = z;
-                quiver.onMove();
-                return arrow.at;
-            }
+    console.log('doUpdate', pair[0].label);
+
+    var arrow = pair[0];
+    var sheet = pair[1];
+    sheet.clear();
+    sheet.drawGrid();
+    sheet.ctx.strokeStyle = 'black';
+    var f;
+    if (arrow.op === variableOp) {
+        var c = arrow.at;
+        f = function(z) { return c; };
+    } else {
+        f = function(z) {
+            xVar.at = z;
+            quiver.onMove();
+            return arrow.at;
         }
-        drawMap(sheet, f, 0.05, 15);
-    });        
+    }
+    drawMap(sheet, f, 0.05, 15);
+
     xVar.at = savedAt;     // XXX ugh hack
     quiver.onMove();
     watching = true;
