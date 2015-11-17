@@ -94,14 +94,14 @@ function drawStreamline(sheetObj, z, f, vectorScale) {
     var nsteps = 10;
     for (var i = 0; i < nsteps; ++i) {
         ctx.lineWidth = (nsteps-i) * 0.5;
-        var dz = rmul(vectorScale/nsteps, f(z));
-        if (1 && (scale*scale)*(0.001) < squaredMagnitude(dz)) {
+        var dz = complex.rmul(vectorScale/nsteps, f(z));
+        if (1 && (scale*scale)*(0.001) < complex.squaredMagnitude(dz)) {
             // We going too far and might end up with random-looking
             // sharp-angled paths. Stop and let this streamline get
             // approximately filled in from some other starting point.
             break;
         }
-        var z1 = add(z, dz);
+        var z1 = complex.add(z, dz);
 
         ctx.beginPath();
         ctx.moveTo(scale*z.re, scale*z.im);

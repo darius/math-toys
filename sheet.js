@@ -69,7 +69,7 @@
 
     // A sheet is a canvas displaying the complex-number plane.
     function makeSheet(canvas, options) {
-        options = override({center:   zero,
+        options = override({center:   complex.zero,
                             font:     '12pt Georgia',
                             realSpan: 8},
                            options);
@@ -262,12 +262,12 @@
         }
 
         function isCandidatePick(at, arrow) {
-            return distance2(at, arrow.at) <= minSelectionDistance2;
+            return complex.distance2(at, arrow.at) <= minSelectionDistance2;
         }
 
         // TODO: make a list of constants, probably
-        var zeroArrow = quiver.add({op: constantOp, at: zero});
-        var oneArrow  = quiver.add({op: constantOp, at: one});
+        var zeroArrow = quiver.add({op: constantOp, at: complex.zero});
+        var oneArrow  = quiver.add({op: constantOp, at: complex.one});
 
         var emptyHand = {
             moveFromStart: noOp,
@@ -314,8 +314,8 @@
         function pickClosestTo(at, candidates) {
             var result = null;
             candidates.forEach(function(arrow) {
-                var d2 = distance2(at, arrow.at);
-                if (result === null || d2 < distance2(at, result.at)) {
+                var d2 = complex.distance2(at, arrow.at);
+                if (result === null || d2 < complex.distance2(at, result.at)) {
                     result = arrow;
                 }
             });
@@ -349,8 +349,8 @@
             onMove: function(xy) {
                 if (handStartedAt === undefined) return;
                 var at = sheet.pointFromXY(xy);
-                strayed = strayed || maxClickDistance2 < distance2(handStartedAt, at);
-                hand.moveFromStart(sub(at, handStartedAt));
+                strayed = strayed || maxClickDistance2 < complex.distance2(handStartedAt, at);
+                hand.moveFromStart(complex.sub(at, handStartedAt));
                 hand.onMove();
                 show();
             },
@@ -435,15 +435,15 @@
         },
         recompute: noOp,
         showProvenance: function(arrow, sheet) { // XXX fix the caller
-            sheet.drawLine(zero, arrow.at);
-            sheet.drawSpiral(one, arrow.at, arrow.at);
+            sheet.drawLine(complex.zero, arrow.at);
+            sheet.drawSpiral(complex.one, arrow.at, arrow.at);
         }
     };
 
     function makeMoverHand(arrow, quiver) {
         var startAt = arrow.at;
         function moveFromStart(offset) {
-            arrow.at = add(startAt, offset);
+            arrow.at = complex.add(startAt, offset);
         }
         function onMove() {
             quiver.onMove();
@@ -458,7 +458,7 @@
     }
 
     function makeAddHand(sheet, selection, perform) {
-        var adding = zero;
+        var adding = complex.zero;
         function moveFromStart(offset) {
             adding = offset;
         }
@@ -474,18 +474,18 @@
             },
             show: function() {
                 sheet.ctx.strokeStyle = 'magenta';
-                sheet.drawLine(zero, adding);
+                sheet.drawLine(complex.zero, adding);
                 selection.forEach(function(arrow) {
-                    sheet.drawLine(arrow.at, add(arrow.at, adding));
+                    sheet.drawLine(arrow.at, complex.add(arrow.at, adding));
                 });
             }
         };
     }
 
     function makeMultiplyHand(sheet, selection, perform) {
-        var multiplying = one;
+        var multiplying = complex.one;
         function moveFromStart(offset) {
-            multiplying = add(one, offset);
+            multiplying = complex.add(complex.one, offset);
         }
         function onEnd() {
             perform(mulOp, multiplying);
@@ -499,9 +499,9 @@
             },
             show: function() {
                 sheet.ctx.strokeStyle = 'green';
-                sheet.drawSpiral(one, multiplying, multiplying);
+                sheet.drawSpiral(complex.one, multiplying, multiplying);
                 selection.forEach(function(arrow) {
-                    sheet.drawSpiral(arrow.at, multiplying, mul(arrow.at, multiplying));
+                    sheet.drawSpiral(arrow.at, multiplying, complex.mul(arrow.at, multiplying));
                 });
             }
         };
@@ -518,7 +518,7 @@
             }
         },
         recompute: function(arrow) {
-            arrow.at = add(arrow.arg1.at, arrow.arg2.at);
+            arrow.at = complex.add(arrow.arg1.at, arrow.arg2.at);
         },
         showProvenance: function(arrow, sheet) {
             sheet.drawLine(arrow.arg1.at, arrow.at);
@@ -536,7 +536,7 @@
             }
         },
         recompute: function(arrow) {
-            arrow.at = mul(arrow.arg1.at, arrow.arg2.at);
+            arrow.at = complex.mul(arrow.arg1.at, arrow.arg2.at);
         },
         showProvenance: function(arrow, sheet) {
             sheet.drawSpiral(arrow.arg1.at, arrow.arg2.at, arrow.at);
@@ -574,22 +574,22 @@
     // similar to one from 1 to v.
     function computeSpiralArc(u, v, uv) {
         // Multiples of v^(1/8) as points on the spiral from 1 to v.
-        var h4 = roughSqrt(v);
-        var h2 = roughSqrt(h4);
-        var h1 = roughSqrt(h2);
-        var h3 = mul(h2, h1);
-        var h5 = mul(h4, h1);
-        var h6 = mul(h4, h2);
-        var h7 = mul(h4, h3);
+        var h4 = complex.roughSqrt(v);
+        var h2 = complex.roughSqrt(h4);
+        var h1 = complex.roughSqrt(h2);
+        var h3 = complex.mul(h2, h1);
+        var h5 = complex.mul(h4, h1);
+        var h6 = complex.mul(h4, h2);
+        var h7 = complex.mul(h4, h3);
 
         return [u,
-                mul(u, h1),
-                mul(u, h2),
-                mul(u, h3),
-                mul(u, h4),
-                mul(u, h5),
-                mul(u, h6),
-                mul(u, h7),
+                complex.mul(u, h1),
+                complex.mul(u, h2),
+                complex.mul(u, h3),
+                complex.mul(u, h4),
+                complex.mul(u, h5),
+                complex.mul(u, h6),
+                complex.mul(u, h7),
                 uv];
     }
 
