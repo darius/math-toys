@@ -6,7 +6,7 @@ var canvas;
 window.onload = function() {
     canvas = document.getElementById("canvas");
     quiver = sheet.makeQuiver();
-    var ui = sheet.makeSheetUI(quiver, canvas, { width: 800, height: 800 }, {});
+    var ui = sheet.makeSheetUI(quiver, canvas, {}, {});
     ui.show();
 }
 

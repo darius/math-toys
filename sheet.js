@@ -74,13 +74,6 @@
                             realSpan: 8},
                            options);
 
-        if (options.width == null || options.height == null ) {
-            throw new Error("Pass 'width' and 'height' in options");
-        }
-
-        canvas.width = options.width;
-        canvas.height = options.height;
-
         var ctx    = canvas.getContext('2d');
         var width  = canvas.width;   // N.B. it's best if these are even
         var height = canvas.height;

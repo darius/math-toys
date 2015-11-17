@@ -4,7 +4,6 @@
 
 var quiver, sheetObj;
 var xVar;
-var CANVAS_WIDTH_HEIGHT = { width: 300, height: 300 };
 
 window.onload = function() {
     var canvas1 = document.getElementById("canvas1");
@@ -12,10 +11,10 @@ window.onload = function() {
     quiver = sheet.makeQuiver();
     xVar = quiver.add({op: sheet.variableOp, at: {re: 1, im: 1}});
     xVar.label = 'x';
-    var ui = sheet.makeSheetUI(quiver, canvas1, CANVAS_WIDTH_HEIGHT, {});
+    var ui = sheet.makeSheetUI(quiver, canvas1, {}, {});
     ui.show();
 
-    sheetObj = sheet.makeSheet(canvas2, CANVAS_WIDTH_HEIGHT);
+    sheetObj = sheet.makeSheet(canvas2);
     sheetObj.drawGrid();
     sheetObj.ctx.strokeStyle = 'black';
     drawMap(sheetObj,
@@ -41,9 +40,11 @@ var pairs = [];
 
 function addSheet(arrow) {
     var canvas = document.createElement('canvas');
+    canvas.height = canvas1.height;
+    canvas.width = canvas1.width;
     document.getElementById('sheets').appendChild(canvas);
     document.getElementById('sheets').appendChild(document.createTextNode(' '));
-    var sheetObj = sheet.makeSheet(canvas, CANVAS_WIDTH_HEIGHT);
+    var sheetObj = sheet.makeSheet(canvas);
     pairs.push([arrow, sheetObj]);
     update();
 }
