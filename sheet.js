@@ -626,6 +626,28 @@
         }
     }
 
+    function toArray(arrayLike) {
+        return Array.prototype.slice.call(arrayLike);
+    };
+
+    function partial(fn) {
+        var prefixArgs = toArray(arguments).slice(1);
+        return function () {
+            return fn.apply(null, prefixArgs.concat(toArray(arguments)));
+        };
+    };
+
+    function compose() {
+        var fns = toArray(arguments);
+        return function(v) {
+            for (var i = 0; i < fns.length; i++) {
+                v = fns[i].call(null, v);
+            }
+
+            return v;
+        };
+    };
+
     exports.sheet = {
         makeQuiver: makeQuiver,
         makeSheet: makeSheet,
