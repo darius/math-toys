@@ -6,7 +6,7 @@ var quiver, sheet;
 var xVar;
 var CANVAS_WIDTH_HEIGHT = { width: 300, height: 300 };
 
-function onLoad() {
+window.onload = function() {
     var canvas1 = document.getElementById("canvas1");
     var canvas2 = document.getElementById("canvas2");
     quiver = makeQuiver();
