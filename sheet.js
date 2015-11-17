@@ -650,6 +650,8 @@
         makeQuiver: makeQuiver,
         makeSheet: makeSheet,
         makeSheetUI: makeSheetUI,
-        variableOp: variableOp
+        variableOp: variableOp,
+        constantOp: constantOp,
+        dotRadius: dotRadius
     };
 })(this);
