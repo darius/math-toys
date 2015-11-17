@@ -1,8 +1,10 @@
 'use strict';
 
 var quiver;                     // for debug
+var canvas;
 
 function onLoad() {
+    canvas = document.getElementById("canvas");
     quiver = makeQuiver();
     var ui = makeSheetUI(quiver, canvas, { width: 800, height: 800 }, {});
     ui.show();

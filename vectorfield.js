@@ -7,6 +7,8 @@ var xVar;
 var CANVAS_WIDTH_HEIGHT = { width: 300, height: 300 };
 
 function onLoad() {
+    var canvas1 = document.getElementById("canvas1");
+    var canvas2 = document.getElementById("canvas2");
     quiver = makeQuiver();
     xVar = quiver.add({op: variableOp, at: {re: 1, im: 1}});
     xVar.label = 'x';
