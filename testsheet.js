@@ -1,17 +1,17 @@
 'use strict';
 
 var quiver;                     // for debug
-var canvas;
+var ctx;
 
 window.onload = function() {
-    canvas = document.getElementById("canvas");
+    ctx = document.getElementById("canvas").getContext("2d");
     quiver = sheet.makeQuiver();
-    var ui = sheet.makeSheetUI(quiver, canvas, {}, {});
+    var ui = sheet.makeSheetUI(quiver, ctx, {}, {});
     ui.show();
 }
 
 function tempTest() {
-    var sheetObj = sheet.makeSheet(canvas);
+    var sheetObj = sheet.makeSheet(ctx);
     sheetObj.drawGrid();
     sheetObj.ctx.lineWidth = 1;
     sheetObj.ctx.strokeStyle = 'black';

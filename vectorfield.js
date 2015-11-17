@@ -2,19 +2,20 @@
 
 'use strict';
 
+var ctx1, ctx2;
 var quiver, sheetObj;
 var xVar;
 
 window.onload = function() {
-    var canvas1 = document.getElementById("canvas1");
-    var canvas2 = document.getElementById("canvas2");
+    ctx1 = document.getElementById("canvas1").getContext("2d");
+    ctx2 = document.getElementById("canvas2").getContext("2d");
     quiver = sheet.makeQuiver();
     xVar = quiver.add({op: sheet.variableOp, at: {re: 1, im: 1}});
     xVar.label = 'x';
-    var ui = sheet.makeSheetUI(quiver, canvas1, {}, {});
+    var ui = sheet.makeSheetUI(quiver, ctx1, {}, {});
     ui.show();
 
-    sheetObj = sheet.makeSheet(canvas2);
+    sheetObj = sheet.makeSheet(ctx2);
     sheetObj.drawGrid();
     sheetObj.ctx.strokeStyle = 'black';
     drawMap(sheetObj,
@@ -39,12 +40,12 @@ var watching = true;
 var pairs = [];
 
 function addSheet(arrow) {
-    var canvas = document.createElement('canvas');
-    canvas.height = canvas1.height;
-    canvas.width = canvas1.width;
-    document.getElementById('sheets').appendChild(canvas);
+    var ctx = document.createElement('canvas').getContext("2d");
+    ctx.canvas.height = ctx1.canvas.height;
+    ctx.canvas.width = ctx1.canvas.width;
+    document.getElementById('sheets').appendChild(ctx.canvas);
     document.getElementById('sheets').appendChild(document.createTextNode(' '));
-    var sheetObj = sheet.makeSheet(canvas);
+    var sheetObj = sheet.makeSheet(ctx);
     pairs.push([arrow, sheetObj]);
     update();
 }
@@ -79,8 +80,8 @@ function update() {
 function drawMap(sheetObj, f, vectorScale, spacing) {
     var ctx = sheetObj.ctx;
     ctx.globalAlpha = 0.25;
-    var height = sheetObj.canvas.height;
-    var width  = sheetObj.canvas.width;
+    var height = sheetObj.ctx.canvas.height;
+    var width  = sheetObj.ctx.canvas.width;
     for (var y = 0; y < height; y += spacing) {
         for (var x = 0; x < width; x += spacing) {
             var z = sheetObj.pointFromXY({x: x, y: y});

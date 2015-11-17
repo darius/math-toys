@@ -68,9 +68,8 @@
     var tau = 2*Math.PI;
 
     // A sheet is a canvas displaying the complex-number plane.
-    function Sheet(canvas, options) {
-        this.canvas = canvas;
-        this.ctx = canvas.getContext('2d');
+    function Sheet(ctx, options) {
+        this.ctx = ctx;
         this.options = override({center:   complex.zero,
                                  font:     '12pt Georgia',
                                  realSpan: 8},
@@ -81,13 +80,13 @@
         }
 
         this.dims = {
-            width: canvas.width,   // N.B. it's best if these are even
-            height: canvas.height,
-            left: -canvas.width/2,
-            right:  canvas.width/2,
-            bottom: -canvas.height/2,
-            top:  canvas.height/2,
-            scale: canvas.width / this.options.realSpan
+            width: ctx.canvas.width,   // N.B. it's best if these are even
+            height: ctx.canvas.height,
+            left: -ctx.canvas.width/2,
+            right:  ctx.canvas.width/2,
+            bottom: -ctx.canvas.height/2,
+            top:  ctx.canvas.height/2,
+            scale: ctx.canvas.width / this.options.realSpan
         };
 
         this.ctx.font = this.options.font;
@@ -216,13 +215,13 @@
 
     // A sheet UI presents a quiver on a sheet, along with state
     // and controls for seeing and manipulating the quiver.
-    function makeSheetUI(quiver, canvas, options, controls) {
+    function makeSheetUI(quiver, ctx, options, controls) {
         options = override({adding:      true,
                             multiplying: true,
                             showGrid:    true},
                            options);
 
-        var sheet = new Sheet(canvas, options, true);
+        var sheet = new Sheet(ctx, options, true);
 
         var minSelectionDistance2 = Math.pow(minSelectionDistance / sheet.dims.scale, 2);
         var maxClickDistance2     = Math.pow(maxClickDistance / sheet.dims.scale, 2);
@@ -344,7 +343,7 @@
         var handStartedAt;
         var strayed;
 
-        addPointerListener(canvas, {
+        addPointerListener(ctx.canvas, {
             onStart: function(xy) {
                 handStartedAt = sheet.pointFromXY(xy);
                 strayed = false;
