@@ -257,7 +257,6 @@ function makeSheetUI(quiver, canvas, options, controls) {
         return distance2(at, arrow.at) <= minSelectionDistance2;
     }
 
-    // TODO: make a list of constants, probably
     var zeroArrow = quiver.add({op: constantOp, at: zero});
     var oneArrow  = quiver.add({op: constantOp, at: one});
 
@@ -286,7 +285,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
     }
 
     function perform(op, at) {
-        var target = pickTarget(at, quiver.getArrows()); // TODO: also the constants
+        var target = pickTarget(at, quiver.getArrows());
         if (target !== null) {
             assert(0 <= selection.length && selection.length <= 1);
             selection.forEach(function(argument, i) {
