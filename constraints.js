@@ -70,7 +70,7 @@ function makeLinearExpr(constant, terms) {
         var vars = new Set(getVariables());
         e2.getVariables().forEach(function(v2) { vars.add(v2); });
         var combination = [];
-        for (v in vars.values()) {
+        for (var v of vars.values()) {
             combination.push([v, (c * coefficient(v) // XXX or with complex arith
                                   + c2 * e2.coefficient(v))]);
         }
@@ -100,6 +100,7 @@ function makeLinearExpr(constant, terms) {
 
     return {
         constant: constant,
+        _terms: terms,
         getVariables: getVariables,
         coefficient: coefficient,
         aVariable: aVariable,
@@ -115,6 +116,7 @@ function makeLinearExpr(constant, terms) {
         },
         substituteFor: substituteFor,
         normalize: normalize,
+        combine: combine,
     };               
 }
 
