@@ -1,4 +1,4 @@
-// Sketch of constraint solving
+// Solving linear equality constraints
 
 'use strict';
 
