@@ -13,7 +13,8 @@ function solveEquations(eqns) {
         reduced.equations.forEach(function (eqn) {
             var v = eqn.definesVar();
             if (v !== null) {
-                result[v] = rmul(-1, eqn.constant);
+//                result[v] = rmul(-1, eqn.constant);
+                result[v] = -eqn.constant;
             }
         });
         return result;
