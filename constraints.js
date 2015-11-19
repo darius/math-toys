@@ -4,7 +4,7 @@
 
 // Return an object mapping variable to solution, for those
 // variables that eqns constrains to a value.
-function solve(eqns) {
+function solveEquations(eqns) {
     var reduced = reduceEquations(eqns);
     if (!reduced.isConsistent) {
         return {};
@@ -69,10 +69,11 @@ function makeLinearExpr(constant, terms) {
     function combine(c, e2, c2) {
         var vars = new Set(getVariables());
         e2.getVariables().forEach(function(v2) { vars.add(v2); });
-        var combination = vars.values().map(function(v) {
-            return [v, (c * coefficient(v) // XXX or with complex arith
-                        + c2 * e2.coefficient(v))];
-        });
+        var combination = [];
+        for (v in vars.values()) {
+            combination.push([v, (c * coefficient(v) // XXX or with complex arith
+                                  + c2 * e2.coefficient(v))]);
+        }
         return makeLinearExpr(c * constant + c2 * e2.constant,
                               combination);
     }
@@ -89,7 +90,7 @@ function makeLinearExpr(constant, terms) {
     }
 
     function isConstant() {
-        // true if terms is empty
+        return terms.length === 0;
     }
 
     function aVariable() {
@@ -100,6 +101,7 @@ function makeLinearExpr(constant, terms) {
     return {
         constant: constant,
         getVariables: getVariables,
+        coefficient: coefficient,
         aVariable: aVariable,
         isInconsistent: function() {
             return isConstant() && constant !== 0; // XXX zero for complex
@@ -111,6 +113,8 @@ function makeLinearExpr(constant, terms) {
             if (terms.length === 1 && terms[0][1] == 1) return terms[0][0];
             return null;
         },
+        substituteFor: substituteFor,
+        normalize: normalize,
     };               
 }
 
