@@ -2,17 +2,20 @@
 
 'use strict';
 
+var cnum = mathtoys.complex;
+var sh = mathtoys.sheet;
+
 var quiver, sheet;
 var xVar;
 
 function onLoad() {
-    quiver = makeQuiver();
-    xVar = quiver.add({op: variableOp, at: {re: 1, im: 1}});
+    quiver = sh.makeQuiver();
+    xVar = quiver.add({op: sh.variableOp, at: {re: 1, im: 1}});
     xVar.label = 'x';
-    var ui = makeSheetUI(quiver, canvas1, {}, {});
+    var ui = sh.makeSheetUI(quiver, canvas1, {}, {});
     ui.show();
 
-    sheet = makeSheet(canvas2);
+    sheet = sh.makeSheet(canvas2);
     sheet.drawGrid();
     sheet.ctx.strokeStyle = 'black';
     drawMap(sheet,
@@ -42,7 +45,7 @@ function addSheet(arrow) {
     canvas.height = canvas1.height;
     document.getElementById('sheets').appendChild(canvas);
     document.getElementById('sheets').appendChild(document.createTextNode(' '));
-    var sheet = makeSheet(canvas);
+    var sheet = sh.makeSheet(canvas);
     pairs.push([arrow, sheet]);
     update();
 }
@@ -86,7 +89,7 @@ function doUpdate(pair) {
     sheet.drawGrid();
     sheet.ctx.strokeStyle = 'black';
     var f;
-    if (arrow.op === variableOp) {
+    if (arrow.op === sh.variableOp) {
         var c = arrow.at;
         f = function(z) { return c; };
     } else {
@@ -122,14 +125,14 @@ function drawStreamline(sheet, z, f, vectorScale) {
     var nsteps = 10;
     for (var i = 0; i < nsteps; ++i) {
         ctx.lineWidth = (nsteps-i) * 0.5;
-        var dz = rmul(vectorScale/nsteps, f(z));
-        if (1 && (scale*scale)*(0.001) < squaredMagnitude(dz)) {
+        var dz = cnum.rmul(vectorScale/nsteps, f(z));
+        if (1 && (scale*scale)*(0.001) < cnum.squaredMagnitude(dz)) {
             // We going too far and might end up with random-looking
             // sharp-angled paths. Stop and let this streamline get
             // approximately filled in from some other starting point.
             break;
         }
-        var z1 = add(z, dz);
+        var z1 = cnum.add(z, dz);
 
         ctx.beginPath();
         ctx.moveTo(scale*z.re, scale*z.im);

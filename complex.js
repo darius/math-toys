@@ -1,3 +1,5 @@
+;(function(exports) {
+
 'use strict';
 
 var zero = {re: 0, im: 0};
@@ -64,3 +66,20 @@ function roughCubeRoot(cube) {
     }
     return z;
 }
+
+if (exports.mathtoys === void 0) exports.mathtoys = {};
+exports.mathtoys.complex = {
+    zero: zero,
+    one: one,
+    squaredMagnitude: squaredMagnitude,
+    distance2: distance2,
+    add: add,
+    sub: sub,
+    mul: mul,
+    div: div,
+    reciprocal: reciprocal,
+    conjugate: conjugate,
+    rmul: rmul,
+    roughSqrt: roughSqrt,
+};
+})(this);

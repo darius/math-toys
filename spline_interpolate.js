@@ -15,9 +15,14 @@
     at http://www.gnu.org/licenses/.
 */
 
-// Irrelevant code has been removed -- Darius Bacon
+// Irrelevant code has been removed, and the remainder wrapped into a module.
+// -- Darius Bacon
 // TODO: should I instead use the top answer to
 // http://stackoverflow.com/questions/7054272/how-to-draw-smooth-curve-through-n-points-using-javascript-html5-canvas
+
+;(function(exports) {
+
+'use strict';
 
 function getControlPoints(x0,y0,x1,y1,x2,y2,t){
     //  x0,y0,x1,y1 are the coordinates of the end (knot) pts of this segment
@@ -88,3 +93,9 @@ function drawSpline(ctx,pts,t,closed){
         ctx.closePath();
     }
 }
+
+if (exports.mathtoys === void 0) exports.mathtoys = {};
+exports.mathtoys.spline_interpolate = {
+    drawSpline: drawSpline,
+};
+})(this);

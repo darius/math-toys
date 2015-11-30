@@ -1,7 +1,12 @@
 // A canvas UI to complex-number arithmetic.
 // Let's call complex numbers 'arrows' here. ComplexNumber would be a mouthful.
 
+;(function(exports) {
+
 'use strict';
+
+var cnum = mathtoys.complex;
+var drawSpline = mathtoys.spline_interpolate.drawSpline;
 
 var maxClickDistance = 2;
 var minSelectionDistance = 20;
@@ -68,7 +73,7 @@ var tau = 2*Math.PI;
 
 // A sheet is a canvas displaying the complex-number plane.
 function makeSheet(canvas, options) {
-    options = override({center:   zero,
+    options = override({center:   cnum.zero,
                         font:     '12pt Georgia',
                         realSpan: 8},
                        options);
@@ -254,11 +259,11 @@ function makeSheetUI(quiver, canvas, options, controls) {
     }
 
     function isCandidatePick(at, arrow) {
-        return distance2(at, arrow.at) <= minSelectionDistance2;
+        return cnum.distance2(at, arrow.at) <= minSelectionDistance2;
     }
 
-    var zeroArrow = quiver.add({op: constantOp, at: zero});
-    var oneArrow  = quiver.add({op: constantOp, at: one});
+    var zeroArrow = quiver.add({op: constantOp, at: cnum.zero});
+    var oneArrow  = quiver.add({op: constantOp, at: cnum.one});
 
     var emptyHand = {
         moveFromStart: noOp,
@@ -305,8 +310,8 @@ function makeSheetUI(quiver, canvas, options, controls) {
     function pickClosestTo(at, candidates) {
         var result = null;
         candidates.forEach(function(arrow) {
-            var d2 = distance2(at, arrow.at);
-            if (result === null || d2 < distance2(at, result.at)) {
+            var d2 = cnum.distance2(at, arrow.at);
+            if (result === null || d2 < cnum.distance2(at, result.at)) {
                 result = arrow;
             }
         });
@@ -340,8 +345,8 @@ function makeSheetUI(quiver, canvas, options, controls) {
         onMove: function(xy) {
             if (handStartedAt === undefined) return;
             var at = sheet.pointFromXY(xy);
-            strayed = strayed || maxClickDistance2 < distance2(handStartedAt, at);
-            hand.moveFromStart(sub(at, handStartedAt));
+            strayed = strayed || maxClickDistance2 < cnum.distance2(handStartedAt, at);
+            hand.moveFromStart(cnum.sub(at, handStartedAt));
             hand.onMove();
             show();
         },
@@ -426,15 +431,15 @@ var variableOp = {
     },
     recompute: noOp,
     showProvenance: function(arrow, sheet) { // XXX fix the caller
-        sheet.drawLine(zero, arrow.at);
-        sheet.drawSpiral(one, arrow.at, arrow.at);
+        sheet.drawLine(cnum.zero, arrow.at);
+        sheet.drawSpiral(cnum.one, arrow.at, arrow.at);
     }
 };
 
 function makeMoverHand(arrow, quiver) {
     var startAt = arrow.at;
     function moveFromStart(offset) {
-        arrow.at = add(startAt, offset);
+        arrow.at = cnum.add(startAt, offset);
     }
     function onMove() {
         quiver.onMove();
@@ -449,7 +454,7 @@ function makeMoverHand(arrow, quiver) {
 }
 
 function makeAddHand(sheet, selection, perform) {
-    var adding = zero;
+    var adding = cnum.zero;
     function moveFromStart(offset) {
         adding = offset;
     }
@@ -465,18 +470,18 @@ function makeAddHand(sheet, selection, perform) {
         },
         show: function() {
             sheet.ctx.strokeStyle = 'magenta';
-            sheet.drawLine(zero, adding);
+            sheet.drawLine(cnum.zero, adding);
             selection.forEach(function(arrow) {
-                sheet.drawLine(arrow.at, add(arrow.at, adding));
+                sheet.drawLine(arrow.at, cnum.add(arrow.at, adding));
             });
         }
     };
 }
 
 function makeMultiplyHand(sheet, selection, perform) {
-    var multiplying = one;
+    var multiplying = cnum.one;
     function moveFromStart(offset) {
-        multiplying = add(one, offset);
+        multiplying = cnum.add(cnum.one, offset);
     }
     function onEnd() {
         perform(mulOp, multiplying);
@@ -490,9 +495,9 @@ function makeMultiplyHand(sheet, selection, perform) {
         },
         show: function() {
             sheet.ctx.strokeStyle = 'green';
-            sheet.drawSpiral(one, multiplying, multiplying);
+            sheet.drawSpiral(cnum.one, multiplying, multiplying);
             selection.forEach(function(arrow) {
-                sheet.drawSpiral(arrow.at, multiplying, mul(arrow.at, multiplying));
+                sheet.drawSpiral(arrow.at, multiplying, cnum.mul(arrow.at, multiplying));
             });
         }
     };
@@ -509,7 +514,7 @@ var addOp = {
         }
     },
     recompute: function(arrow) {
-        arrow.at = add(arrow.arg1.at, arrow.arg2.at);
+        arrow.at = cnum.add(arrow.arg1.at, arrow.arg2.at);
     },
     showProvenance: function(arrow, sheet) {
         sheet.drawLine(arrow.arg1.at, arrow.at);
@@ -527,7 +532,7 @@ var mulOp = {
         }
     },
     recompute: function(arrow) {
-        arrow.at = mul(arrow.arg1.at, arrow.arg2.at);
+        arrow.at = cnum.mul(arrow.arg1.at, arrow.arg2.at);
     },
     showProvenance: function(arrow, sheet) {
         sheet.drawSpiral(arrow.arg1.at, arrow.arg2.at, arrow.at);
@@ -565,22 +570,22 @@ var override =
 // similar to one from 1 to v.
 function computeSpiralArc(u, v, uv) {
     // Multiples of v^(1/8) as points on the spiral from 1 to v.
-    var h4 = roughSqrt(v);
-    var h2 = roughSqrt(h4);
-    var h1 = roughSqrt(h2);
-    var h3 = mul(h2, h1);
-    var h5 = mul(h4, h1);
-    var h6 = mul(h4, h2);
-    var h7 = mul(h4, h3);
+    var h4 = cnum.roughSqrt(v);
+    var h2 = cnum.roughSqrt(h4);
+    var h1 = cnum.roughSqrt(h2);
+    var h3 = cnum.mul(h2, h1);
+    var h5 = cnum.mul(h4, h1);
+    var h6 = cnum.mul(h4, h2);
+    var h7 = cnum.mul(h4, h3);
 
     return [u,
-            mul(u, h1),
-            mul(u, h2),
-            mul(u, h3),
-            mul(u, h4),
-            mul(u, h5),
-            mul(u, h6),
-            mul(u, h7),
+            cnum.mul(u, h1),
+            cnum.mul(u, h2),
+            cnum.mul(u, h3),
+            cnum.mul(u, h4),
+            cnum.mul(u, h5),
+            cnum.mul(u, h6),
+            cnum.mul(u, h7),
             uv];
 }
 
@@ -617,3 +622,18 @@ function assert(claim) {
     }
 }
 
+exports.mathtoys.sheet = {
+    maxClickDistance: 2,
+    minSelectionDistance: 20,
+    dotRadius: 3,
+    selectedDotRadius: 10,
+
+    makeQuiver: makeQuiver,
+    makeSheet: makeSheet,
+    makeSheetUI: makeSheetUI,
+    constantOp: constantOp,
+    variableOp: variableOp,
+    addOp: addOp,
+    mulOp: mulOp,
+};
+})(this);
