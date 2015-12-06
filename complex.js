@@ -2,15 +2,19 @@
 
 'use strict';
 
-var zero = {re: 0, im: 0};
-var one  = {re: 1, im: 0};
+const zero = {re: 0, im: 0};
+const one  = {re: 1, im: 0};
 
 function squaredMagnitude(v) {
     return v.re*v.re + v.im*v.im;
 }
 
-function distance2(u, v) {
-    return squaredMagnitude(sub(u, v));
+function magnitude(v) {
+    return Math.hypot(v.re, v.im);
+}
+
+function distance(u, v) {
+    return magnitude(sub(u, v));
 }
 
 function add(u, v) {
@@ -32,12 +36,12 @@ function div(u, v) {
 }
 
 function reciprocal(v) {
-    var vv = v.re*v.re + v.im*v.im;
+    const vv = v.re*v.re + v.im*v.im;
     return rmul(1/vv, conjugate(v));
 }
 
 function conjugate(v) {
-    return {re: v.re,
+    return {re:  v.re,
             im: -v.im};
 }
 
@@ -49,8 +53,8 @@ function rmul(r, v) {
 // An approximate square root of square.
 // Not necessarily the principal one. (How to get that?)
 function roughSqrt(square) {
-    var z = rmul(.5, add(one, square)); // (is this a silly first guess?)
-    for (var i = 10; 0 <= i; --i) {
+    let z = rmul(.5, add(one, square)); // (is this a silly first guess?)
+    for (let i = 10; 0 <= i; --i) {
         z = rmul(.5, add(z, div(square, z)));
     }
     return z;
@@ -59,8 +63,8 @@ function roughSqrt(square) {
 // An approximate cube root of cube.
 // Not necessarily the principal one. (How to get that?)
 function roughCubeRoot(cube) {
-    var z = roughSqrt(cube);
-    for (var i = 10; 0 <= i; --i) {
+    let z = roughSqrt(cube);
+    for (let i = 10; 0 <= i; --i) {
         z = rmul(1/3, add(rmul(2, z),
                           div(cube, mul(z, z))));
     }
@@ -69,17 +73,17 @@ function roughCubeRoot(cube) {
 
 if (exports.mathtoys === void 0) exports.mathtoys = {};
 exports.mathtoys.complex = {
-    zero: zero,
-    one: one,
-    squaredMagnitude: squaredMagnitude,
-    distance2: distance2,
-    add: add,
-    sub: sub,
-    mul: mul,
-    div: div,
-    reciprocal: reciprocal,
-    conjugate: conjugate,
-    rmul: rmul,
-    roughSqrt: roughSqrt,
+    zero,
+    one,
+    magnitude,
+    distance,
+    add,
+    sub,
+    mul,
+    div,
+    reciprocal,
+    conjugate,
+    rmul,
+    roughSqrt,
 };
 })(this);

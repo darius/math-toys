@@ -33,8 +33,8 @@ function getControlPoints(x0,y0,x1,y1,x2,y2,t){
     //  t is the 'tension' which controls how far the control points spread.
     
     //  Scaling factors: distances from this knot to the previous and following knots.
-    var d01=Math.sqrt(Math.pow(x1-x0,2)+Math.pow(y1-y0,2));
-    var d12=Math.sqrt(Math.pow(x2-x1,2)+Math.pow(y2-y1,2));
+    var d01=Math.hypot(x1-x0, y1-y0);
+    var d12=Math.hypot(x2-x1, y2-y1);
    
     var fa=t*d01/(d01+d12);
     var fb=t-fa;

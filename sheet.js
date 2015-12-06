@@ -5,21 +5,21 @@
 
 'use strict';
 
-var cnum = mathtoys.complex;
-var drawSpline = mathtoys.spline_interpolate.drawSpline;
+const cnum = mathtoys.complex;
+const drawSpline = mathtoys.spline_interpolate.drawSpline;
 
-var maxClickDistance = 2;
-var minSelectionDistance = 20;
-var dotRadius = 3;
-var selectedDotRadius = 10;
+const maxClickDistance = 2;
+const minSelectionDistance = 20;
+const dotRadius = 3;
+const selectedDotRadius = 10;
 
 // A quiver is a collection of arrows, with dependencies between some of them.
 // The arrows can move, and can be added or removed from the collection.
 // It's the 'model' with respect to the sheet UI.
 function makeQuiver() {
 
-    var arrows = [];
-    var watchers = [];
+    const arrows = [];
+    const watchers = [];
 
     function isEmpty() {
         return 0 < arrows.length;
@@ -30,7 +30,7 @@ function makeQuiver() {
     }
 
     function getFreeArrows() {
-        return arrows.filter(function(arrow) { return arrow.op === variableOp; });
+        return arrows.filter(arrow => arrow.op === variableOp);
     }
 
     function add(arrow) {
@@ -51,25 +51,25 @@ function makeQuiver() {
     }
 
     function notify(event) {
-        watchers.forEach(function(watch) { watch(event); });
+        watchers.forEach(watch => watch(event));
     }
 
     function recompute(arrow) {
         arrow.op.recompute(arrow);
     }
 
-    var quiver = {
-        add: add,
-        addWatcher: addWatcher,
-        isEmpty: isEmpty,
-        getArrows: getArrows,
-        getFreeArrows: getFreeArrows,
-        onMove: onMove,
+    const quiver = {
+        add,
+        addWatcher,
+        isEmpty,
+        getArrows,
+        getFreeArrows,
+        onMove,
     };
     return quiver;
 }
 
-var tau = 2*Math.PI;
+const tau = 2*Math.PI;
 
 // A sheet is a canvas displaying the complex-number plane.
 function makeSheet(canvas, options) {
@@ -78,14 +78,14 @@ function makeSheet(canvas, options) {
                         realSpan: 8},
                        options);
 
-    var ctx    = canvas.getContext('2d');
-    var width  = canvas.width;   // N.B. it's best if these are even
-    var height = canvas.height;
-    var left   = -width/2;
-    var right  =  width/2;
-    var bottom = -height/2;
-    var top    =  height/2;
-    var scale  = width / options.realSpan;
+    const ctx    = canvas.getContext('2d');
+    const width  = canvas.width;   // N.B. it's best if these are even
+    const height = canvas.height;
+    const left   = -width/2;
+    const right  =  width/2;
+    const bottom = -height/2;
+    const top    =  height/2;
+    const scale  = width / options.realSpan;
 
     ctx.font = options.font;
     ctx.translate(right, top);
@@ -119,8 +119,8 @@ function makeSheet(canvas, options) {
 
     // N.B. textOffset is in canvas (xy) coordinates.
     function drawText(at, text, textOffset) {
-        var x = at.re * scale + textOffset.x;
-        var y = at.im * scale + textOffset.y;
+        const x = at.re * scale + textOffset.x;
+        const y = at.im * scale + textOffset.y;
         ctx.save();
         ctx.scale(1, -1); // Back into left-handed coordinates so the text isn't flipped
         ctx.fillText(text, x, -y);
@@ -129,9 +129,9 @@ function makeSheet(canvas, options) {
 
     // Draw an arc from cnum u to uv (which should be u*v).
     function drawSpiral(u, v, uv) {
-        var zs = computeSpiralArc(u, v, uv);
-        var path = [];
-        zs.forEach(function(z) {
+        const zs = computeSpiralArc(u, v, uv);
+        const path = [];
+        zs.forEach(z => {
             path.push(scale * z.re);
             path.push(scale * z.im);
         });
@@ -139,7 +139,7 @@ function makeSheet(canvas, options) {
     }
 
     function drawGrid() {
-        var i, j;
+        let i, j;
         ctx.strokeStyle = 'grey';
         ctx.lineWidth = 1;
         for (i = 1; (i-1) * scale <= right; ++i) { // XXX hack
@@ -192,17 +192,17 @@ function makeSheet(canvas, options) {
     }
 
     return {
-        canvas: canvas,
-        clear: clear,
-        ctx: ctx,
-        drawDot: drawDot,
-        drawGrid: drawGrid,
-        drawLine: drawLine,
-        drawSpiral: drawSpiral,
-        drawText: drawText,
-        pointFromXY: pointFromXY,
-        scale: scale,
-        translate: translate,
+        canvas,
+        clear,
+        ctx,
+        drawDot,
+        drawGrid,
+        drawLine,
+        drawSpiral,
+        drawText,
+        pointFromXY,
+        scale,
+        translate,
     };
 }
 
@@ -214,15 +214,15 @@ function makeSheetUI(quiver, canvas, options, controls) {
                         showGrid:    true},
                        options);
 
-    var sheet = makeSheet(canvas, options);
+    const sheet = makeSheet(canvas, options);
 
-    var minSelectionDistance2 = Math.pow(minSelectionDistance / sheet.scale, 2);
-    var maxClickDistance2     = Math.pow(maxClickDistance / sheet.scale, 2);
+    const minSelectionD = minSelectionDistance / sheet.scale;
+    const maxClickD     = maxClickDistance / sheet.scale;
 
-    var selection = [];
+    const selection = [];
 
     function show() {
-        var ctx = sheet.ctx;
+        const ctx = sheet.ctx;
         ctx.save();
         sheet.clear();
 
@@ -259,13 +259,13 @@ function makeSheetUI(quiver, canvas, options, controls) {
     }
 
     function isCandidatePick(at, arrow) {
-        return cnum.distance2(at, arrow.at) <= minSelectionDistance2;
+        return cnum.distance(at, arrow.at) <= minSelectionD;
     }
 
-    var zeroArrow = quiver.add({op: constantOp, at: cnum.zero});
-    var oneArrow  = quiver.add({op: constantOp, at: cnum.one});
+    const zeroArrow = quiver.add({op: constantOp, at: cnum.zero});
+    const oneArrow  = quiver.add({op: constantOp, at: cnum.one});
 
-    var emptyHand = {
+    const emptyHand = {
         moveFromStart: noOp,
         onMove: noOp,
         onEnd: noOp,
@@ -274,7 +274,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
     };
 
     function onClick(at) {
-        var choice = pickTarget(at, quiver.getArrows());
+        const choice = pickTarget(at, quiver.getArrows());
         if (choice !== null) {
             toggleSelection(choice);
         } else {
@@ -286,14 +286,14 @@ function makeSheetUI(quiver, canvas, options, controls) {
     function toggleSelection(arrow) {
         assert(0 <= selection.length && selection.length <= 1);
         if (arrow !== selection[0]) selection.splice(0, 1, arrow);
-        else selection.splice(0, 1);
+        else                        selection.splice(0, 1);
     }
 
     function perform(op, at) {
-        var target = pickTarget(at, quiver.getArrows());
+        const target = pickTarget(at, quiver.getArrows());
         if (target !== null) {
             assert(0 <= selection.length && selection.length <= 1);
-            selection.forEach(function(argument, i) {
+            selection.forEach((argument, i) => {
                 selection[i] = quiver.add({op: op, arg1: argument, arg2: target});
             });
             assert(0 <= selection.length && selection.length <= 1);
@@ -302,16 +302,14 @@ function makeSheetUI(quiver, canvas, options, controls) {
     }
 
     function pickTarget(at, arrows) {
-        return pickClosestTo(at, arrows.filter(function(arrow) {
-            return isCandidatePick(at, arrow);
-        }));
+        return pickClosestTo(at, arrows.filter(arrow => isCandidatePick(at, arrow)));
     }
 
     function pickClosestTo(at, candidates) {
-        var result = null;
-        candidates.forEach(function(arrow) {
-            var d2 = cnum.distance2(at, arrow.at);
-            if (result === null || d2 < cnum.distance2(at, result.at)) {
+        let result = null;
+        candidates.forEach(arrow => {
+            const d = cnum.distance(at, arrow.at);
+            if (result === null || d < cnum.distance(at, result.at)) {
                 result = arrow;
             }
         });
@@ -319,7 +317,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
     }
 
     function chooseHand(at) {
-        var target = pickTarget(at, quiver.getFreeArrows());
+        const target = pickTarget(at, quiver.getFreeArrows());
         if (target !== null) {
             return makeMoverHand(target, quiver);
         } else if (options.adding && isCandidatePick(at, zeroArrow)) {
@@ -331,26 +329,26 @@ function makeSheetUI(quiver, canvas, options, controls) {
         }
     }
 
-    var hand = emptyHand;
-    var handStartedAt;
-    var strayed;
+    let hand = emptyHand;
+    let handStartedAt;
+    let strayed;
 
     addPointerListener(canvas, {
-        onStart: function(xy) {
+        onStart: xy => {
             handStartedAt = sheet.pointFromXY(xy);
             strayed = false;
             hand = chooseHand(handStartedAt);
             show();
         },
-        onMove: function(xy) {
+        onMove: xy => {
             if (handStartedAt === undefined) return;
-            var at = sheet.pointFromXY(xy);
-            strayed = strayed || maxClickDistance2 < cnum.distance2(handStartedAt, at);
+            const at = sheet.pointFromXY(xy);
+            strayed = strayed || maxClickD < cnum.distance(handStartedAt, at);
             hand.moveFromStart(cnum.sub(at, handStartedAt));
             hand.onMove();
             show();
         },
-        onEnd: function() {
+        onEnd: () => {
             assert(handStartedAt !== undefined);
             if (!strayed) {
                 onClick(handStartedAt); // XXX or take from where it ends?
@@ -364,7 +362,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
     });
 
     return {
-        show: show,
+        show,
     };
 }
 
@@ -398,17 +396,17 @@ function addPointerListener(canvas, listener) {
 
     canvas.addEventListener('mousedown', leftButtonOnly(mouseHandler(canvas, listener.onStart)));
     canvas.addEventListener('mousemove', mouseHandler(canvas, listener.onMove));
-    canvas.addEventListener('mouseup',   mouseHandler(canvas, function(coords) {
+    canvas.addEventListener('mouseup',   mouseHandler(canvas, coords => {
         listener.onMove(coords);
         listener.onEnd();
     }));
 }
 
-var constantOp = {
+const constantOp = {
     color: 'blue',
     labelOffset: {x: -12, y: 6},
-    label: function(arrow) {
-        var z = arrow.at;
+    label: arrow => {
+        const z = arrow.at;
         if      (z.im === 0) return '' + z.re;
         else if (z.re === 0) return fmtImag(z.im);
         else                 return '' + z.re + '+' + fmtImag(z.im);
@@ -418,26 +416,24 @@ var constantOp = {
 };
 
 function fmtImag(im) {
-    var s = '';
+    let s = '';
     if (im !== 1) s += im;
     return s + 'i';
 }
 
-var variableOp = {
+const variableOp = {
     color: 'black',
     labelOffset: {x: 6, y: -14},
-    label: function(arrow, quiver) {
-        return String.fromCharCode(97 + quiver.getFreeArrows().length);
-    },
+    label: (arrow, quiver) => String.fromCharCode(97 + quiver.getFreeArrows().length),
     recompute: noOp,
-    showProvenance: function(arrow, sheet) { // XXX fix the caller
+    showProvenance: (arrow, sheet) => { // XXX fix the caller
         sheet.drawLine(cnum.zero, arrow.at);
         sheet.drawSpiral(cnum.one, arrow.at, arrow.at);
-    }
+    },
 };
 
 function makeMoverHand(arrow, quiver) {
-    var startAt = arrow.at;
+    const startAt = arrow.at;
     function moveFromStart(offset) {
         arrow.at = cnum.add(startAt, offset);
     }
@@ -445,8 +441,8 @@ function makeMoverHand(arrow, quiver) {
         quiver.onMove();
     }
     return {
-        moveFromStart: moveFromStart,
-        onMove: onMove,
+        moveFromStart,
+        onMove,
         onEnd: onMove,     // TODO: add to the undo stack
         dragGrid: noOp,
         show: noOp,
@@ -454,7 +450,7 @@ function makeMoverHand(arrow, quiver) {
 }
 
 function makeAddHand(sheet, selection, perform) {
-    var adding = cnum.zero;
+    let adding = cnum.zero;
     function moveFromStart(offset) {
         adding = offset;
     }
@@ -462,16 +458,14 @@ function makeAddHand(sheet, selection, perform) {
         perform(addOp, adding);
     }
     return {
-        moveFromStart: moveFromStart,
+        moveFromStart,
         onMove: noOp,
-        onEnd: onEnd,
-        dragGrid: function() {
-            sheet.translate(adding);
-        },
-        show: function() {
+        onEnd,
+        dragGrid: () => sheet.translate(adding),
+        show: () => {
             sheet.ctx.strokeStyle = 'magenta';
             sheet.drawLine(cnum.zero, adding);
-            selection.forEach(function(arrow) {
+            selection.forEach(arrow => {
                 sheet.drawLine(arrow.at, cnum.add(arrow.at, adding));
             });
         }
@@ -479,7 +473,7 @@ function makeAddHand(sheet, selection, perform) {
 }
 
 function makeMultiplyHand(sheet, selection, perform) {
-    var multiplying = cnum.one;
+    let multiplying = cnum.one;
     function moveFromStart(offset) {
         multiplying = cnum.add(cnum.one, offset);
     }
@@ -487,66 +481,66 @@ function makeMultiplyHand(sheet, selection, perform) {
         perform(mulOp, multiplying);
     }
     return {
-        moveFromStart: moveFromStart,
+        moveFromStart,
         onMove: noOp,
-        onEnd: onEnd,
-        dragGrid: function() {
+        onEnd,
+        dragGrid: () => {
             sheet.ctx.transform(multiplying.re, multiplying.im, -multiplying.im, multiplying.re, 0, 0);
         },
-        show: function() {
+        show: () => {
             sheet.ctx.strokeStyle = 'green';
             sheet.drawSpiral(cnum.one, multiplying, multiplying);
-            selection.forEach(function(arrow) {
+            selection.forEach(arrow => {
                 sheet.drawSpiral(arrow.at, multiplying, cnum.mul(arrow.at, multiplying));
             });
         }
     };
 }
 
-var addOp = {
+const addOp = {
     color: 'black',
     labelOffset: {x: 6, y: -14},
-    label: function(arrow) {
+    label: arrow => {
         if (arrow.arg1 === arrow.arg2) {
             return '2' + parenthesize(arrow.arg1.label);
         } else {
             return infixLabel(arrow.arg1, '+', arrow.arg2);
         }
     },
-    recompute: function(arrow) {
+    recompute: arrow => {
         arrow.at = cnum.add(arrow.arg1.at, arrow.arg2.at);
     },
-    showProvenance: function(arrow, sheet) {
+    showProvenance: (arrow, sheet) => {
         sheet.drawLine(arrow.arg1.at, arrow.at);
     },
 };
 
-var mulOp = {
+const mulOp = {
     color: 'black',
     labelOffset: {x: 6, y: -14},
-    label: function(arrow) {
+    label: arrow => {
         if (arrow.arg1 === arrow.arg2) {
             return parenthesize(arrow.arg1.label) + '^2';
         } else {
             return infixLabel(arrow.arg1, '', arrow.arg2);
         }
     },
-    recompute: function(arrow) {
+    recompute: arrow => {
         arrow.at = cnum.mul(arrow.arg1.at, arrow.arg2.at);
     },
-    showProvenance: function(arrow, sheet) {
+    showProvenance: (arrow, sheet) => {
         sheet.drawSpiral(arrow.arg1.at, arrow.arg2.at, arrow.at);
     },
 };
 
 function infixLabel(arg1, opLabel, arg2) {
-    var L = parenthesize(arg1.label);
-    var R = parenthesize(arg2.label);
+    const L = parenthesize(arg1.label);
+    const R = parenthesize(arg2.label);
     return L + opLabel + R;
 }
 
 function parenthesize(name) {
-    return name.length === 1 ? name : '(' + name + ')';
+    return name.length === 1 ? name : `(${name})`;
 }
 
 
@@ -555,9 +549,9 @@ function parenthesize(name) {
 function noOp() { }
 
 // See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
-var override =
-    (Object.assign ? Object.assign : function(obj1, obj2) {
-        for (var k in obj2) {
+const override =
+    (Object.assign ? Object.assign : (obj1, obj2) => {
+        for (let k in obj2) {   // (can't use const yet in Firefox)
             if (({}).hasOwnProperty.call(obj2, k)) {
                 obj1[k] = obj2[k];
             }
@@ -570,13 +564,13 @@ var override =
 // similar to one from 1 to v.
 function computeSpiralArc(u, v, uv) {
     // Multiples of v^(1/8) as points on the spiral from 1 to v.
-    var h4 = cnum.roughSqrt(v);
-    var h2 = cnum.roughSqrt(h4);
-    var h1 = cnum.roughSqrt(h2);
-    var h3 = cnum.mul(h2, h1);
-    var h5 = cnum.mul(h4, h1);
-    var h6 = cnum.mul(h4, h2);
-    var h7 = cnum.mul(h4, h3);
+    const h4 = cnum.roughSqrt(v);
+    const h2 = cnum.roughSqrt(h4);
+    const h1 = cnum.roughSqrt(h2);
+    const h3 = cnum.mul(h2, h1);
+    const h5 = cnum.mul(h4, h1);
+    const h6 = cnum.mul(h4, h2);
+    const h7 = cnum.mul(h4, h3);
 
     return [u,
             cnum.mul(u, h1),
@@ -599,17 +593,17 @@ function mouseCoords(canvas, event) {
 }
 
 function canvasCoords(canvas, pageX, pageY) {
-    var canvasBounds = canvas.getBoundingClientRect();
+    const canvasBounds = canvas.getBoundingClientRect();
     return {x: pageX - canvasBounds.left,
             y: pageY - canvasBounds.top};
 }
 
 function mouseHandler(canvas, handler) {
-    return function(event) { handler(mouseCoords(canvas, event)); };
+    return event => handler(mouseCoords(canvas, event));
 }
 
 function leftButtonOnly(handler) {
-    return function(event) {
+    return event => {
         if (event.button === 0) { // left mouse button
             handler(event);
         }
@@ -628,12 +622,12 @@ exports.mathtoys.sheet = {
     dotRadius: 3,
     selectedDotRadius: 10,
 
-    makeQuiver: makeQuiver,
-    makeSheet: makeSheet,
-    makeSheetUI: makeSheetUI,
-    constantOp: constantOp,
-    variableOp: variableOp,
-    addOp: addOp,
-    mulOp: mulOp,
+    makeQuiver,
+    makeSheet,
+    makeSheetUI,
+    constantOp,
+    variableOp,
+    addOp,
+    mulOp,
 };
 })(this);
