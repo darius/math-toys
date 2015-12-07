@@ -6,6 +6,7 @@
 'use strict';
 
 const cnum = mathtoys.complex;
+const pointing = mathtoys.pointing;
 const drawSpline = mathtoys.spline_interpolate.drawSpline;
 
 const maxClickDistance = 2;
@@ -371,14 +372,14 @@ function addPointerListener(canvas, listener) {
     function onTouchstart(event) {
         event.preventDefault();     // to disable mouse events
         if (event.touches.length === 1) {
-            listener.onStart(touchCoords(canvas, event.touches[0]));
+            listener.onStart(pointing.touchCoords(canvas, event.touches[0]));
         }
     }
 
     function onTouchmove(event) {
         if (event.touches.length === 1) {
             // XXX need to track by touch identifier rather than array index
-            listener.onMove(touchCoords(canvas, event.touches[0]));
+            listener.onMove(pointing.touchCoords(canvas, event.touches[0]));
         }
     }
 
@@ -394,9 +395,9 @@ function addPointerListener(canvas, listener) {
     canvas.addEventListener('touchmove',  onTouchmove);
     canvas.addEventListener('touchend',   onTouchend);
 
-    canvas.addEventListener('mousedown', leftButtonOnly(mouseHandler(canvas, listener.onStart)));
-    canvas.addEventListener('mousemove', mouseHandler(canvas, listener.onMove));
-    canvas.addEventListener('mouseup',   mouseHandler(canvas, coords => {
+    canvas.addEventListener('mousedown', pointing.leftButtonOnly(pointing.mouseHandler(canvas, listener.onStart)));
+    canvas.addEventListener('mousemove', pointing.mouseHandler(canvas, listener.onMove));
+    canvas.addEventListener('mouseup',   pointing.mouseHandler(canvas, coords => {
         listener.onMove(coords);
         listener.onEnd();
     }));
@@ -543,22 +544,6 @@ function parenthesize(name) {
     return name.length === 1 ? name : `(${name})`;
 }
 
-
-// Helpers
-
-function noOp() { }
-
-// See https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/assign
-const override =
-    (Object.assign ? Object.assign : (obj1, obj2) => {
-        for (let k in obj2) {   // (can't use const yet in Firefox)
-            if (({}).hasOwnProperty.call(obj2, k)) {
-                obj1[k] = obj2[k];
-            }
-        }
-        return obj1;
-    });
-
 // Return a sequence of points along an arc from cnum u to uv.
 // Assuming uv = u*v, it should approximate a logarithmic spiral
 // similar to one from 1 to v.
@@ -581,39 +566,6 @@ function computeSpiralArc(u, v, uv) {
             cnum.mul(u, h6),
             cnum.mul(u, h7),
             uv];
-}
-
-// XXX review the touch API, use clientX etc. instead?
-function touchCoords(canvas, touch) {
-    return canvasCoords(canvas, touch.pageX, touch.pageY);
-}
-
-function mouseCoords(canvas, event) {
-    return canvasCoords(canvas, event.clientX, event.clientY);
-}
-
-function canvasCoords(canvas, pageX, pageY) {
-    const canvasBounds = canvas.getBoundingClientRect();
-    return {x: pageX - canvasBounds.left,
-            y: pageY - canvasBounds.top};
-}
-
-function mouseHandler(canvas, handler) {
-    return event => handler(mouseCoords(canvas, event));
-}
-
-function leftButtonOnly(handler) {
-    return event => {
-        if (event.button === 0) { // left mouse button
-            handler(event);
-        }
-    };
-}
-
-function assert(claim) {
-    if (!claim) {
-        throw new Error("Liar");
-    }
 }
 
 exports.mathtoys.sheet = {
