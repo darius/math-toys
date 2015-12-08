@@ -70,6 +70,56 @@ function makeQuiver() {
 
 const tau = 2*Math.PI;
 
+    function makeNumberLine(canvas, yPixels, options) {
+        options = override({
+            left: -10,
+            right: 10,
+        }, options);
+
+        const ctx    = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = 20;
+        const scale = canvas.width / (options.right - options.left);
+
+        function drawTicks() {
+            let i, j;
+
+            ctx.strokeStyle = 'grey';
+            ctx.lineWidth = 1;
+            for (i = options.left; i <= options.right; ++i) {
+                for (j = 1; j <= 9; ++j) {
+                    ctx.fillStyle = "gray";
+                    ctx.fillRect(scale * (i + j / 10), yPixels, 2, 10);
+                }
+
+                ctx.fillStyle = "black";
+                ctx.fillRect(scale * i, yPixels, 2, 15);
+            }
+        };
+
+        function drawNumberLine() {
+            ctx.strokeRect(-ctx.canvas.width / 2 - 1,
+                           yPixels,
+                           ctx.canvas.width + 2,
+                           height);
+        };
+
+        function show() {
+            ctx.save();
+            ctx.translate(ctx.canvas.width / 2,
+                          ctx.canvas.height / 2);
+            drawNumberLine();
+            drawTicks();
+            ctx.restore();
+        };
+
+        return {
+            show: show
+        }
+    };
+
+// i'll change my indentation
+
 // A ruler is a canvas displaying the complex-number plane.
 function makeRulers(canvas, options) {
     options = override({center:   0,
@@ -116,34 +166,6 @@ function makeRulers(canvas, options) {
         ctx.stroke();
     }
 
-    function drawGrid() {
-        let i, j;
-        ctx.strokeStyle = 'grey';
-        ctx.lineWidth = 1;
-        for (i = 1; (i-1) * scale <= right; ++i) { // XXX hack
-            ctx.globalAlpha = 0.25;
-            for (j = 1; j <= 9; ++j) {
-                gridLines((i-1 + j/10) * scale, bottom, (i-1 + j/10) * scale, top);
-            }
-            ctx.globalAlpha = 1;
-            gridLines(i * scale, bottom, i * scale, top);
-        }
-
-        ctx.fillStyle = 'white';
-        ctx.fillRect(left, -1, width, 3);
-        ctx.fillRect(-1, bottom, 3, height);
-
-    }
-    
-    function gridLines(x0, y0, x1, y1) {
-        gridLine(x0, y0, x1, y1);
-        gridLine(-x0, -y0, -x1, -y1);
-    }
-
-    function gridLine(x0, y0, x1, y1) {
-        drawLineXY(x0 - 0.5, y0 - 0.5, x1 - 0.5, y1 - 0.5); // - 0.5 for sharp grid lines
-    }
-
     function drawLineXY(x0, y0, x1, y1) {
         ctx.beginPath();
         ctx.moveTo(x0, y0);
@@ -156,8 +178,6 @@ function makeRulers(canvas, options) {
         clear,
         ctx,
         drawDot,
-        drawGrid,
-        drawLine,
         pointFromXY,
         scale,
     };
@@ -531,7 +551,7 @@ exports.mathtoys.ruler = {
     selectedDotRadius: 10,
 
     makeQuiver,
-    makeRulers,
+    makeNumberLine,
     makeRulerUI,
     constantOp,
     variableOp,
