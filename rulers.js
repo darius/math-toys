@@ -126,12 +126,19 @@ function makeNumberLine(canvas, yPixels, options) {
         ctx.restore();
     }
 
+    const origin = -options.left * scale;
+
+    function valueFromX(x) {
+        return (x - origin) / scale;
+    }
+
     return {
         show,
+        valueFromX,
     };
 }
 
-function makeNumberLineUI(canvas, options) {
+function makeNumberLineUI(quiver, canvas, options) {
     options = override({
         font:   defaultFont,
         labels: true,
@@ -149,7 +156,34 @@ function makeNumberLineUI(canvas, options) {
         top.show();
     }
 
-//    let hand = emptyHand;
+    const emptyHand = {
+        moveFromStart: noOp,
+        onMove: noOp,
+        onEnd: noOp,
+        dragGrid: noOp,
+        show: noOp,
+    };
+
+    function onClick(at) {
+        var value = bot.valueFromX(at.x);
+        const choice = pickTarget(at, quiver.getArrows());
+        console.log('click', value, choice);
+        if (choice !== null) {
+//            toggleSelection(choice);
+        } else {
+            quiver.add({op: variableOp, at: at});
+        }
+    }
+
+    function pickTarget(at, arrows) {
+        return null;
+    }
+
+    function chooseHand(xy) {
+        return emptyHand;
+    }
+
+    let hand = emptyHand;
     let handStartedAt;
     let strayed;
 
@@ -157,27 +191,27 @@ function makeNumberLineUI(canvas, options) {
         onStart: xy => {
             handStartedAt = xy;
             strayed = false;
-//            hand = chooseHand(handStartedAt);
+            hand = chooseHand(handStartedAt);
             show();
         },
         onMove: xy => {
             if (handStartedAt === undefined) return;
             strayed = strayed || maxClickDistance < distance(handStartedAt, xy);
-//            hand.moveFromStart(cnum.sub(xy, handStartedAt));
-//            hand.onMove();
+            hand.moveFromStart(sub(xy, handStartedAt));
+            hand.onMove();
             show();
         },
         onEnd: () => {
             assert(handStartedAt !== undefined);
             if (strayed) {
-//                hand.onEnd();
+                hand.onEnd();
             } else {
-//                onClick(handStartedAt); // XXX or take from where it ends?
+                onClick(handStartedAt); // XXX or take from where it ends?
             }
-//            hand = emptyHand;
             console.log('end', handStartedAt, strayed);
-            show();
+            hand = emptyHand;
             handStartedAt = undefined;
+            show();
         },
     });
 
@@ -188,6 +222,11 @@ function makeNumberLineUI(canvas, options) {
 
 function distance(p1, p2) {
     return Math.hypot(p2.x - p1.x, p2.y - p1.y);
+}
+
+function sub(p1, p2) {
+    return {x: p2.x - p1.x,
+            y: p2.y - p1.y};
 }
 
 function addPointerListener(canvas, listener) {
@@ -247,12 +286,12 @@ function fmtImag(im) {
 
 const variableOp = {
     color: 'black',
-    labelOffset: {x: 6, y: -14},
+//    labelOffset: {x: 6, y: -14},
     label: (arrow, quiver) => String.fromCharCode(97 + quiver.getFreeArrows().length),
     recompute: noOp,
     showProvenance: (arrow, ruler) => { // XXX fix the caller
-        ruler.drawLine(cnum.zero, arrow.at);
-        ruler.drawSpiral(cnum.one, arrow.at, arrow.at);
+//        ruler.drawLine(cnum.zero, arrow.at);
+//        ruler.drawSpiral(cnum.one, arrow.at, arrow.at);
     },
 };
 
@@ -332,10 +371,10 @@ const addOp = {
         }
     },
     recompute: arrow => {
-        arrow.at = cnum.add(arrow.arg1.at, arrow.arg2.at);
+        arrow.at = arrow.arg1.at + arrow.arg2.at;
     },
     showProvenance: (arrow, ruler) => {
-        ruler.drawLine(arrow.arg1.at, arrow.at);
+//        ruler.drawLine(arrow.arg1.at, arrow.at);
     },
 };
 

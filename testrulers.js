@@ -5,14 +5,14 @@ const R = mathtoys.ruler;
 let quiver;                     // for debug
 
 function onLoad() {
-    return tempTest();
     quiver = R.makeQuiver();
+    return tempTest();
     const ui = R.makeRulerUI(quiver, canvas, {}, {});
     ui.show();
 }
 
 function tempTest() {
-    const ruler = R.makeNumberLineUI(canvas);
+    const ruler = R.makeNumberLineUI(quiver, canvas);
     ruler.show();
     // ruler.drawGrid();
     // ruler.ctx.lineWidth = 1;
