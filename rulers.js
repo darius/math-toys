@@ -95,14 +95,14 @@ function makeNumberLine(canvas, yPixels, options) {
             ctx.fillStyle = "black";
             ctx.fillRect(scale * i, yPixels, 2, 15);
         }
-    };
+    }
 
     function drawNumberLine() {
         ctx.strokeRect(-ctx.canvas.width / 2 - 1,
                        yPixels,
                        ctx.canvas.width + 2,
                        height);
-    };
+    }
 
     function show() {
         ctx.save();
@@ -111,7 +111,7 @@ function makeNumberLine(canvas, yPixels, options) {
         drawNumberLine();
         drawTicks();
         ctx.restore();
-    };
+    }
 
     return {
         show: show
