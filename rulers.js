@@ -101,24 +101,23 @@ function makeNumberLine(canvas, yPixels, options) {
     }
 
     function drawTick(x, h) {
-        if (options.facing === 1) ctx.fillRect(scale * x, yPixels, 1, h);
-        else                      ctx.fillRect(scale * x, yPixels+height-h, 1, h);
+        if (options.facing === 1) ctx.fillRect(scale * x, 0, 1, h);
+        else                      ctx.fillRect(scale * x, height-h, 1, h);
     }
 
     function drawLabel(x, label) {
         const dy = options.facing === 1 ? 15 : height-15;
-        ctx.fillText(label, scale * x, yPixels + dy);
+        ctx.fillText(label, scale * x, dy);
     }
 
     function drawNumberLine() {
         ctx.fillStyle = '#ed9';
-        ctx.fillRect(-width/2, yPixels, width, height);
+        ctx.fillRect(-width/2, 0, width, height);
     }
 
     function show() {
         ctx.save();
-        ctx.translate(canvas.width / 2,
-                      canvas.height / 2);
+        ctx.translate(width/2, canvas.height/2 + yPixels);
         ctx.font = options.font;
         ctx.textAlign = 'center';
         drawNumberLine();
@@ -127,7 +126,7 @@ function makeNumberLine(canvas, yPixels, options) {
     }
 
     return {
-        show: show
+        show,
     }
 };
 
