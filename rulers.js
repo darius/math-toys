@@ -75,7 +75,7 @@ function makeNumberLine(canvas, yPixels, options) {
         facing: 1,
         font:   '12pt sans-serif',
         labels: true,
-        left:  -6,
+        left:  -3,
         right:  6,
     }, options);
 
@@ -112,12 +112,13 @@ function makeNumberLine(canvas, yPixels, options) {
 
     function drawNumberLine() {
         ctx.fillStyle = '#ed9';
-        ctx.fillRect(-width/2, 0, width, height);
+        ctx.fillRect(scale * options.left, 0, width, height);
     }
 
     function show() {
         ctx.save();
-        ctx.translate(width/2, canvas.height/2 + yPixels);
+        ctx.translate(width/2 - scale * (options.right + options.left) / 2,
+                      canvas.height/2 + yPixels);
         ctx.font = options.font;
         ctx.textAlign = 'center';
         drawNumberLine();
