@@ -141,10 +141,10 @@ function makeNumberLine(canvas, yPixels, options) {
     }
 
     function drawText(at, text) {
-        if (options.facing === 1) return; // XXX
+        if (options.facing === -1) return; // XXX
         ctx.textBaseline = options.facing === 1 ? 'bottom' : 'top';
         const x = at * scale;
-        const y = options.facing === 1 ? 0 : height;
+        const y = options.facing === 1 ? -dotRadius - 2 : height + dotRadius + 2;
         ctx.fillText(text, x, y);
     }
 
@@ -168,8 +168,8 @@ function makeNumberLineUI(quiver, canvas, options) {
     }, options);
 
     const ctx = canvas.getContext('2d');
-    const bot = makeNumberLine(canvas,  10, override({facing:  1}, options));
-    const top = makeNumberLine(canvas, -50, override({facing: -1}, options));
+    const bot = makeNumberLine(canvas,  15, override({facing:  1}, options));
+    const top = makeNumberLine(canvas, -55, override({facing: -1}, options));
 
     function show() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
