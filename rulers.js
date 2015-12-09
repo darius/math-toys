@@ -94,6 +94,7 @@ function makeNumberLine(canvas, yPixels, options) {
         ctx.textAlign = 'center';
         drawNumberLine();
         drawTicks();
+        ctx.font = 'italic ' + options.font;
         arrows.forEach(drawArrow);
         ctx.restore();
     }
