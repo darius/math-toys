@@ -68,8 +68,6 @@ function makeQuiver() {
     return quiver;
 }
 
-const tau = 2*Math.PI;
-
 function makeNumberLine(canvas, yPixels, options) {
     options = override({
         facing: 1,
@@ -131,7 +129,6 @@ function makeNumberLine(canvas, yPixels, options) {
     }
 };
 
-// A ruler is a canvas displaying the complex-number plane.
 function makeRulers(canvas, options) {
     options = override({center:   0,
                         font:     '12pt Georgia',

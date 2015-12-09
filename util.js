@@ -1,5 +1,7 @@
 'use strict';
 
+const tau = 2*Math.PI;
+
 function noOp() { }
 
 function assert(claim) {

@@ -70,8 +70,6 @@ function makeQuiver() {
     return quiver;
 }
 
-const tau = 2*Math.PI;
-
 // A sheet is a canvas displaying the complex-number plane.
 function makeSheet(canvas, options) {
     options = override({center:   cnum.zero,

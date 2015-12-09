@@ -10,7 +10,7 @@ function onLoad() {
     const ui = R.makeRulerUI(quiver, canvas, {}, {});
     ui.show();
 }
-// how are those lines made?
+
 function tempTest() {
     const ruler = R.makeNumberLine(canvas, 0);
     ruler.show();
