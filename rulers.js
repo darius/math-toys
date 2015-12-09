@@ -76,9 +76,9 @@ function makeNumberLine(canvas, yPixels, options) {
         right: 10,
     }, options);
 
-    const ctx    = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d');
     const width = canvas.width;
-    const height = 20;
+    const height = 30;
     const scale = canvas.width / (options.right - options.left);
 
     function drawTicks() {
@@ -88,17 +88,18 @@ function makeNumberLine(canvas, yPixels, options) {
         ctx.lineWidth = 1;
         for (i = options.left; i <= options.right; ++i) {
             for (j = 1; j <= 9; ++j) {
-                ctx.fillStyle = "gray";
-                ctx.fillRect(scale * (i + j / 10), yPixels, 2, 10);
+                ctx.fillStyle = 'grey';
+                ctx.fillRect(scale * (i + j / 10), yPixels, 1, 10);
             }
 
-            ctx.fillStyle = "black";
-            ctx.fillRect(scale * i, yPixels, 2, 15);
+            ctx.fillStyle = 'black';
+            ctx.fillRect(scale * i, yPixels, 1, 15);
         }
     }
 
     function drawNumberLine() {
-        ctx.strokeRect(-ctx.canvas.width / 2 - 1,
+        ctx.fillStyle = '#ed9';
+        ctx.fillRect(-ctx.canvas.width / 2 - 1,
                        yPixels,
                        ctx.canvas.width + 2,
                        height);
