@@ -86,6 +86,23 @@ function makeNumberLine(canvas, yPixels, options) {
     const height = 40;
     const scale = width / (options.right - options.left);
 
+    function show(arrows) {
+        ctx.save();
+        ctx.translate(width/2 - scale * (options.right + options.left) / 2,
+                      canvas.height/2 + yPixels);
+        ctx.font = options.font;
+        ctx.textAlign = 'center';
+        drawNumberLine();
+        drawTicks();
+        arrows.forEach(drawArrow);
+        ctx.restore();
+    }
+
+    function drawNumberLine() {
+        ctx.fillStyle = '#ed9';
+        ctx.fillRect(scale * options.left, 0, width, height);
+    }
+
     function drawTicks() {
         ctx.lineWidth = 1;
         ctx.textBaseline = options.facing === 1 ? 'top' : 'bottom';
@@ -110,20 +127,24 @@ function makeNumberLine(canvas, yPixels, options) {
         ctx.fillText(label, scale * x, dy);
     }
 
-    function drawNumberLine() {
-        ctx.fillStyle = '#ed9';
-        ctx.fillRect(scale * options.left, 0, width, height);
+    function drawArrow(arrow) {
+        drawDot(arrow.at, dotRadius);
+        drawText(arrow.at, arrow.label);
     }
 
-    function show() {
-        ctx.save();
-        ctx.translate(width/2 - scale * (options.right + options.left) / 2,
-                      canvas.height/2 + yPixels);
-        ctx.font = options.font;
-        ctx.textAlign = 'center';
-        drawNumberLine();
-        drawTicks();
-        ctx.restore();
+    function drawDot(at, radius) {
+        const y = options.facing === 1 ? 0 : height;
+        ctx.beginPath();
+        ctx.arc(scale * at, y, radius, 0, tau);
+        ctx.fill();
+    }
+
+    function drawText(at, text) {
+        if (options.facing === 1) return; // XXX
+        ctx.textBaseline = options.facing === 1 ? 'bottom' : 'top';
+        const x = at * scale;
+        const y = options.facing === 1 ? 0 : height;
+        ctx.fillText(text, x, y);
     }
 
     const origin = -options.left * scale;
@@ -152,8 +173,9 @@ function makeNumberLineUI(quiver, canvas, options) {
 
     function show() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        bot.show();
-        top.show();
+        const arrows = quiver.getArrows();
+        bot.show(arrows);
+        top.show(arrows);
     }
 
     const emptyHand = {
@@ -164,20 +186,36 @@ function makeNumberLineUI(quiver, canvas, options) {
         show: noOp,
     };
 
-    function onClick(at) {
-        var value = bot.valueFromX(at.x);
-        const choice = pickTarget(at, quiver.getArrows());
+    function onClick(xy) {
+        var value = bot.valueFromX(xy.x);
+        const choice = pickTarget(value, quiver.getArrows());
         console.log('click', value, choice);
         if (choice !== null) {
 //            toggleSelection(choice);
         } else {
-            quiver.add({op: variableOp, at: at});
+            quiver.add({op: variableOp, at: value});
         }
     }
 
-    function pickTarget(at, arrows) {
-        return null;
+    function pickTarget(value, arrows) {
+        return pickClosestTo(value, arrows.filter(arrow => isCandidatePick(value, arrow)));
     }
+
+    function isCandidatePick(value, arrow) {
+        return Math.abs(value - arrow.at) <= minSelectionDistance;
+    }
+
+    function pickClosestTo(value, candidates) {
+        let result = null;
+        candidates.forEach(arrow => {
+            const d = Math.abs(value - arrow.at);
+            if (result === null || d < Math.abs(value - result.at)) {
+                result = arrow;
+            }
+        });
+        return result;
+    }
+
 
     function chooseHand(xy) {
         return emptyHand;
