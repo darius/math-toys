@@ -70,55 +70,53 @@ function makeQuiver() {
 
 const tau = 2*Math.PI;
 
-    function makeNumberLine(canvas, yPixels, options) {
-        options = override({
-            left: -10,
-            right: 10,
-        }, options);
+function makeNumberLine(canvas, yPixels, options) {
+    options = override({
+        left: -10,
+        right: 10,
+    }, options);
 
-        const ctx    = canvas.getContext('2d');
-        const width = canvas.width;
-        const height = 20;
-        const scale = canvas.width / (options.right - options.left);
+    const ctx    = canvas.getContext('2d');
+    const width = canvas.width;
+    const height = 20;
+    const scale = canvas.width / (options.right - options.left);
 
-        function drawTicks() {
-            let i, j;
+    function drawTicks() {
+        let i, j;
 
-            ctx.strokeStyle = 'grey';
-            ctx.lineWidth = 1;
-            for (i = options.left; i <= options.right; ++i) {
-                for (j = 1; j <= 9; ++j) {
-                    ctx.fillStyle = "gray";
-                    ctx.fillRect(scale * (i + j / 10), yPixels, 2, 10);
-                }
-
-                ctx.fillStyle = "black";
-                ctx.fillRect(scale * i, yPixels, 2, 15);
+        ctx.strokeStyle = 'grey';
+        ctx.lineWidth = 1;
+        for (i = options.left; i <= options.right; ++i) {
+            for (j = 1; j <= 9; ++j) {
+                ctx.fillStyle = "gray";
+                ctx.fillRect(scale * (i + j / 10), yPixels, 2, 10);
             }
-        };
 
-        function drawNumberLine() {
-            ctx.strokeRect(-ctx.canvas.width / 2 - 1,
-                           yPixels,
-                           ctx.canvas.width + 2,
-                           height);
-        };
-
-        function show() {
-            ctx.save();
-            ctx.translate(ctx.canvas.width / 2,
-                          ctx.canvas.height / 2);
-            drawNumberLine();
-            drawTicks();
-            ctx.restore();
-        };
-
-        return {
-            show: show
+            ctx.fillStyle = "black";
+            ctx.fillRect(scale * i, yPixels, 2, 15);
         }
     };
 
-// i'll change my indentation
+    function drawNumberLine() {
+        ctx.strokeRect(-ctx.canvas.width / 2 - 1,
+                       yPixels,
+                       ctx.canvas.width + 2,
+                       height);
+    };
+
+    function show() {
+        ctx.save();
+        ctx.translate(ctx.canvas.width / 2,
+                      ctx.canvas.height / 2);
+        drawNumberLine();
+        drawTicks();
+        ctx.restore();
+    };
+
+    return {
+        show: show
+    }
+};
 
 // A ruler is a canvas displaying the complex-number plane.
 function makeRulers(canvas, options) {
