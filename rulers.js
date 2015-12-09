@@ -149,161 +149,33 @@ function makeNumberLineUI(canvas, options) {
         top.show();
     }
 
-    return {
-        show,
-    };
-}
-
-// A ruler UI presents a quiver on a ruler, along with state
-// and controls for seeing and manipulating the quiver.
-function makeRulerUI(quiver, canvas, options, controls) {
-    options = override({adding:      true,
-                        multiplying: true,
-                        showGrid:    true},
-                       options);
-
-    const ruler = makeRuler(canvas, options);
-
-    const minSelectionD = minSelectionDistance / ruler.scale;
-    const maxClickD     = maxClickDistance / ruler.scale;
-
-    const selection = [];
-
-    function show() {
-        const ctx = ruler.ctx;
-        ctx.save();
-        ruler.clear();
-
-        ctx.save();
-        hand.dragGrid();
-        if (options.showGrid) ruler.drawGrid();
-        ctx.fillStyle = 'red';
-        selection.forEach(showArrowSelected);
-        ctx.restore();
-
-        hand.show();
-
-        quiver.getArrows().forEach(showArrowAsMade);
-
-        ctx.restore();
-    }
-
-    function showArrowAsMade(arrow) {
-        arrow.op.showProvenance(arrow, ruler);
-        showArrow(arrow);
-    }
-
-    function showArrowSelected(arrow) {
-        ruler.drawDot(arrow.at, selectedDotRadius);
-    }
-
-    function showArrow(arrow) {
-        ruler.ctx.fillStyle = arrow.op.color;
-        ruler.drawDot(arrow.at, dotRadius);
-        ruler.drawText(arrow.at, arrow.label, arrow.op.labelOffset);
-    }
-
-    function onStateChange() {
-    }
-
-    function isCandidatePick(at, arrow) {
-        return cnum.distance(at, arrow.at) <= minSelectionD;
-    }
-
-    const zeroArrow = quiver.add({op: constantOp, at: cnum.zero});
-    const oneArrow  = quiver.add({op: constantOp, at: cnum.one});
-
-    const emptyHand = {
-        moveFromStart: noOp,
-        onMove: noOp,
-        onEnd: noOp,
-        dragGrid: noOp,
-        show: noOp,
-    };
-
-    function onClick(at) {
-        const choice = pickTarget(at, quiver.getArrows());
-        if (choice !== null) {
-            toggleSelection(choice);
-        } else {
-            quiver.add({op: variableOp, at: at});
-        }
-    }
-
-    // Select arrow unless already selected, in which case unselect it.
-    function toggleSelection(arrow) {
-        assert(0 <= selection.length && selection.length <= 1);
-        if (arrow !== selection[0]) selection.splice(0, 1, arrow);
-        else                        selection.splice(0, 1);
-    }
-
-    function perform(op, at) {
-        const target = pickTarget(at, quiver.getArrows());
-        if (target !== null) {
-            assert(0 <= selection.length && selection.length <= 1);
-            selection.forEach((argument, i) => {
-                selection[i] = quiver.add({op: op, arg1: argument, arg2: target});
-            });
-            assert(0 <= selection.length && selection.length <= 1);
-            onStateChange();
-        }
-    }
-
-    function pickTarget(at, arrows) {
-        return pickClosestTo(at, arrows.filter(arrow => isCandidatePick(at, arrow)));
-    }
-
-    function pickClosestTo(at, candidates) {
-        let result = null;
-        candidates.forEach(arrow => {
-            const d = cnum.distance(at, arrow.at);
-            if (result === null || d < cnum.distance(at, result.at)) {
-                result = arrow;
-            }
-        });
-        return result;
-    }
-
-    function chooseHand(at) {
-        const target = pickTarget(at, quiver.getFreeArrows());
-        if (target !== null) {
-            return makeMoverHand(target, quiver);
-        } else if (options.adding && isCandidatePick(at, zeroArrow)) {
-            return makeAddHand(ruler, selection, perform);
-        } else if (options.multiplying && isCandidatePick(at, oneArrow)) {
-            return makeMultiplyHand(ruler, selection, perform);
-        } else {
-            return emptyHand;
-        }
-    }
-
-    let hand = emptyHand;
+//    let hand = emptyHand;
     let handStartedAt;
     let strayed;
 
     addPointerListener(canvas, {
         onStart: xy => {
-            handStartedAt = ruler.pointFromXY(xy);
+            handStartedAt = xy;
             strayed = false;
-            hand = chooseHand(handStartedAt);
+//            hand = chooseHand(handStartedAt);
             show();
         },
         onMove: xy => {
             if (handStartedAt === undefined) return;
-            const at = ruler.pointFromXY(xy);
-            strayed = strayed || maxClickD < cnum.distance(handStartedAt, at);
-            hand.moveFromStart(cnum.sub(at, handStartedAt));
-            hand.onMove();
+            strayed = strayed || maxClickDistance < distance(handStartedAt, xy);
+//            hand.moveFromStart(cnum.sub(xy, handStartedAt));
+//            hand.onMove();
             show();
         },
         onEnd: () => {
             assert(handStartedAt !== undefined);
-            if (!strayed) {
-                onClick(handStartedAt); // XXX or take from where it ends?
+            if (strayed) {
+//                hand.onEnd();
             } else {
-                hand.onEnd();
+//                onClick(handStartedAt); // XXX or take from where it ends?
             }
-            hand = emptyHand;
+//            hand = emptyHand;
+            console.log('end', handStartedAt, strayed);
             show();
             handStartedAt = undefined;
         },
@@ -312,6 +184,10 @@ function makeRulerUI(quiver, canvas, options, controls) {
     return {
         show,
     };
+}
+
+function distance(p1, p2) {
+    return Math.hypot(p2.x - p1.x, p2.y - p1.y);
 }
 
 function addPointerListener(canvas, listener) {
@@ -489,30 +365,6 @@ function infixLabel(arg1, opLabel, arg2) {
 
 function parenthesize(name) {
     return name.length === 1 ? name : `(${name})`;
-}
-
-// Return a sequence of points along an arc from cnum u to uv.
-// Assuming uv = u*v, it should approximate a logarithmic spiral
-// similar to one from 1 to v.
-function computeSpiralArc(u, v, uv) {
-    // Multiples of v^(1/8) as points on the spiral from 1 to v.
-    const h4 = cnum.roughSqrt(v);
-    const h2 = cnum.roughSqrt(h4);
-    const h1 = cnum.roughSqrt(h2);
-    const h3 = cnum.mul(h2, h1);
-    const h5 = cnum.mul(h4, h1);
-    const h6 = cnum.mul(h4, h2);
-    const h7 = cnum.mul(h4, h3);
-
-    return [u,
-            cnum.mul(u, h1),
-            cnum.mul(u, h2),
-            cnum.mul(u, h3),
-            cnum.mul(u, h4),
-            cnum.mul(u, h5),
-            cnum.mul(u, h6),
-            cnum.mul(u, h7),
-            uv];
 }
 
 exports.mathtoys.ruler = {
