@@ -1,20 +1,20 @@
 'use strict';
 
-const sh = mathtoys.ruler;
+const R = mathtoys.ruler;
 
 let quiver;                     // for debug
 
 function onLoad() {
     return tempTest();
-    quiver = sh.makeQuiver();
-    const ui = sh.makeRulerUI(quiver, canvas, {}, {});
+    quiver = R.makeQuiver();
+    const ui = R.makeRulerUI(quiver, canvas, {}, {});
     ui.show();
 }
 // how are those lines made?
 function tempTest() {
-    const ruler = sh.makeNumberLine(canvas, 0);
+    const ruler = R.makeNumberLine(canvas, 0);
     ruler.show();
-    sh.makeNumberLine(canvas, -50, {facing: -1}).show();
+    R.makeNumberLine(canvas, -50, {facing: -1}).show();
     // ruler.drawGrid();
     // ruler.ctx.lineWidth = 1;
     // ruler.ctx.strokeStyle = 'black';
