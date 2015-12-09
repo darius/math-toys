@@ -75,8 +75,8 @@ function makeNumberLine(canvas, yPixels, options) {
         facing: 1,
         font:   '12pt sans-serif',
         labels: true,
-        left:  -10,
-        right:  10,
+        left:  -6,
+        right:  6,
     }, options);
 
     assert(Math.abs(options.facing) === 1);
