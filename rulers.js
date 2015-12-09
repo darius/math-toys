@@ -148,10 +148,8 @@ function makeNumberLine(canvas, yPixels, options) {
         ctx.fillText(text, x, y);
     }
 
-    const origin = -options.left * scale;
-
     function valueFromX(x) {
-        return (x - origin) / scale;
+        return x / scale + options.left;
     }
 
     return {
