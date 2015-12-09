@@ -126,7 +126,7 @@ function makeNumberLine(canvas, yPixels, options) {
 
     return {
         show,
-    }
+    };
 }
 
 function makeRulers(canvas, options) {
