@@ -68,10 +68,12 @@ function makeQuiver() {
     return quiver;
 }
 
+const defaultFont = '12pt sans-serif';
+
 function makeNumberLine(canvas, yPixels, options) {
     options = override({
         facing: 1,
-        font:   '12pt sans-serif',
+        font:   defaultFont,
         labels: true,
         left:  -3,
         right:  6,
@@ -129,65 +131,26 @@ function makeNumberLine(canvas, yPixels, options) {
     };
 }
 
-function makeRulers(canvas, options) {
-    options = override({center:   0,
-                        font:     '12pt Georgia',
-                        span:     8},
-                       options);
+function makeNumberLineUI(canvas, options) {
+    options = override({
+        font:   defaultFont,
+        labels: true,
+        left:  -3,
+        right:  6,
+    }, options);
 
-    const ctx    = canvas.getContext('2d');
-    const width  = canvas.width;   // N.B. it's best if these are even
-    const height = canvas.height;
-    const left   = -width/2;
-    const right  =  width/2;
-    const bottom = -height/2;
-    const top    =  height/2;
-    const scale  = width / options.realSpan;
+    const ctx = canvas.getContext('2d');
+    const bot = makeNumberLine(canvas,  10, override({facing:  1}, options));
+    const top = makeNumberLine(canvas, -50, override({facing: -1}, options));
 
-    ctx.font = options.font;
-    ctx.translate(right, top);
-    ctx.scale(1, -1);
-
-    // Convert from canvas-relative pixel coordinates, such as from a mouse event.
-    function pointFromXY(xy) {
-        return {re: (xy.x - right) / scale, im: (top - xy.y) / scale};
-    }
-
-    if (options.center !== 0) {
-        throw new Error("off-center ruler not supported yet");
-    }
-
-    function clear() {
-        ctx.clearRect(left, bottom, width, height);
-    }
-
-    function drawDot(at, radius) {
-        ctx.beginPath();
-        ctx.arc(scale * at, 0, radius, 0, tau);
-        ctx.fill();
-    }
-
-    function drawLine(at1, at2) {
-        ctx.beginPath();
-        ctx.moveTo(scale * at1, 0);
-        ctx.lineTo(scale * at2, 0);
-        ctx.stroke();
-    }
-
-    function drawLineXY(x0, y0, x1, y1) {
-        ctx.beginPath();
-        ctx.moveTo(x0, y0);
-        ctx.lineTo(x1, y1);
-        ctx.stroke();
+    function show() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        bot.show();
+        top.show();
     }
 
     return {
-        canvas,
-        clear,
-        ctx,
-        drawDot,
-        pointFromXY,
-        scale,
+        show,
     };
 }
 
@@ -560,7 +523,8 @@ exports.mathtoys.ruler = {
 
     makeQuiver,
     makeNumberLine,
-    makeRulerUI,
+    makeNumberLineUI,
+
     constantOp,
     variableOp,
     addOp,

@@ -12,9 +12,8 @@ function onLoad() {
 }
 
 function tempTest() {
-    const ruler = R.makeNumberLine(canvas, 0);
+    const ruler = R.makeNumberLineUI(canvas);
     ruler.show();
-    R.makeNumberLine(canvas, -50, {facing: -1}).show();
     // ruler.drawGrid();
     // ruler.ctx.lineWidth = 1;
     // ruler.ctx.strokeStyle = 'black';
