@@ -14,6 +14,7 @@ function onLoad() {
 function tempTest() {
     const ruler = sh.makeNumberLine(canvas, 0);
     ruler.show();
+    sh.makeNumberLine(canvas, -50, {facing: -1}).show();
     // ruler.drawGrid();
     // ruler.ctx.lineWidth = 1;
     // ruler.ctx.strokeStyle = 'black';

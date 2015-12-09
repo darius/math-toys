@@ -72,43 +72,55 @@ const tau = 2*Math.PI;
 
 function makeNumberLine(canvas, yPixels, options) {
     options = override({
-        left: -10,
-        right: 10,
+        facing: 1,
+        font:   '12pt sans-serif',
+        labels: true,
+        left:  -10,
+        right:  10,
     }, options);
+
+    assert(Math.abs(options.facing) === 1);
 
     const ctx = canvas.getContext('2d');
     const width = canvas.width;
-    const height = 30;
-    const scale = canvas.width / (options.right - options.left);
+    const height = 40;
+    const scale = width / (options.right - options.left);
 
     function drawTicks() {
-        let i, j;
-
-        ctx.strokeStyle = 'grey';
         ctx.lineWidth = 1;
-        for (i = options.left; i <= options.right; ++i) {
-            for (j = 1; j <= 9; ++j) {
-                ctx.fillStyle = 'grey';
-                ctx.fillRect(scale * (i + j / 10), yPixels, 1, 10);
+        ctx.textBaseline = options.facing === 1 ? 'top' : 'bottom';
+        for (let i = options.left; i <= options.right; ++i) { // XXX what about noninteger bounds?
+            ctx.fillStyle = 'grey';
+            for (let j = 1; j <= 9; ++j) {
+                drawTick(i + j/10, 10);
             }
-
             ctx.fillStyle = 'black';
-            ctx.fillRect(scale * i, yPixels, 1, 15);
+            drawTick(i, 15);
+            if (options.labels) drawLabel(i, ''+i);
         }
+    }
+
+    function drawTick(x, h) {
+        if (options.facing === 1) ctx.fillRect(scale * x, yPixels, 1, h);
+        else                      ctx.fillRect(scale * x, yPixels+height-h, 1, h);
+    }
+
+    function drawLabel(x, label) {
+        const dy = options.facing === 1 ? 15 : height-15;
+        ctx.fillText(label, scale * x, yPixels + dy);
     }
 
     function drawNumberLine() {
         ctx.fillStyle = '#ed9';
-        ctx.fillRect(-ctx.canvas.width / 2 - 1,
-                       yPixels,
-                       ctx.canvas.width + 2,
-                       height);
+        ctx.fillRect(-width/2, yPixels, width, height);
     }
 
     function show() {
         ctx.save();
-        ctx.translate(ctx.canvas.width / 2,
-                      ctx.canvas.height / 2);
+        ctx.translate(canvas.width / 2,
+                      canvas.height / 2);
+        ctx.font = options.font;
+        ctx.textAlign = 'center';
         drawNumberLine();
         drawTicks();
         ctx.restore();
