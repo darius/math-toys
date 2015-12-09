@@ -153,6 +153,7 @@ function makeNumberLine(canvas, yPixels, options) {
     }
 
     return {
+        scale,
         show,
         valueFromX,
     };
@@ -201,7 +202,7 @@ function makeNumberLineUI(quiver, canvas, options) {
     }
 
     function isCandidatePick(value, arrow) {
-        return Math.abs(value - arrow.at) <= minSelectionDistance;
+        return bot.scale * Math.abs(value - arrow.at) <= minSelectionDistance;
     }
 
     function pickClosestTo(value, candidates) {
