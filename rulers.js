@@ -86,7 +86,7 @@ function makeNumberLine(canvas, yPixels, options) {
     const height = 40;
     const scale = width / (options.right - options.left);
 
-    function show(arrows) {
+    function show(arrows, selection) {
         ctx.save();
         ctx.translate(width/2 - scale * (options.right + options.left) / 2,
                       canvas.height/2 + yPixels);
@@ -97,6 +97,17 @@ function makeNumberLine(canvas, yPixels, options) {
         ctx.font = 'italic ' + options.font;
         arrows.forEach(drawArrow);
         ctx.restore();
+
+        function drawArrow(arrow) {
+            if (selection.some(selected => selected === arrow)) {
+                ctx.save();
+                ctx.fillStyle = 'red';
+                drawDot(arrow.at, selectedDotRadius);
+                ctx.restore();
+            }
+            drawDot(arrow.at, dotRadius);
+            drawText(arrow.at, arrow.label);
+        }
     }
 
     function drawNumberLine() {
@@ -126,11 +137,6 @@ function makeNumberLine(canvas, yPixels, options) {
     function drawLabel(x, label) {
         const dy = options.facing === 1 ? 15 : height-15;
         ctx.fillText(label, scale * x, dy);
-    }
-
-    function drawArrow(arrow) {
-        drawDot(arrow.at, dotRadius);
-        drawText(arrow.at, arrow.label);
     }
 
     function drawDot(at, radius) {
@@ -171,11 +177,13 @@ function makeNumberLineUI(quiver, canvas, options) {
     const bot = makeNumberLine(canvas,  15, override({facing:  1}, options));
     const top = makeNumberLine(canvas, -55, override({facing: -1}, options));
 
+    const selection = [];
+
     function show() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         const arrows = quiver.getArrows();
-        bot.show(arrows);
-        top.show(arrows);
+        bot.show(arrows, selection);
+        top.show(arrows, selection);
     }
 
     const emptyHand = {
@@ -191,10 +199,17 @@ function makeNumberLineUI(quiver, canvas, options) {
         const choice = pickTarget(value, quiver.getArrows());
         console.log('click', value, choice);
         if (choice !== null) {
-//            toggleSelection(choice);
+            toggleSelection(choice);
         } else {
             quiver.add({op: variableOp, at: value});
         }
+    }
+
+    // Select arrow unless already selected, in which case unselect it.
+    function toggleSelection(arrow) {
+        assert(0 <= selection.length && selection.length <= 1);
+        if (arrow !== selection[0]) selection.splice(0, 1, arrow);
+        else                        selection.splice(0, 1);
     }
 
     function pickTarget(value, arrows) {
@@ -215,7 +230,6 @@ function makeNumberLineUI(quiver, canvas, options) {
         });
         return result;
     }
-
 
     function chooseHand(xy) {
         return emptyHand;
