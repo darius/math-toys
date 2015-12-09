@@ -150,7 +150,7 @@ function makeNumberLine(canvas, yPixels, options) {
         if (options.facing === -1) return; // XXX
         ctx.textBaseline = options.facing === 1 ? 'bottom' : 'top';
         const x = at * scale;
-        const y = options.facing === 1 ? -dotRadius - 2 : height + dotRadius + 2;
+        const y = options.facing === 1 ? -dotRadius - 3 : height + dotRadius + 3;
         ctx.fillText(text, x, y);
     }
 
