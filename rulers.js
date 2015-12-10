@@ -87,12 +87,15 @@ function makeNumberLine(canvas, yPixels, options) {
     const scale = width / (options.right - options.left);
 
     let shift = 0;
+    let stretch = 1;
 
-    function show(arrows, selection, shift_) {
-        shift = shift_ === void 0 ? 0 : -shift_;
+    function show(arrows, selection, shift_, stretch_) {
+        shift = shift_ === void 0 ? 0 : -shift_; // XXX hacky -
+        stretch = stretch_ === void 0 ? 1 : stretch_;
         ctx.save();
         ctx.translate(width/2 - scale * (shift + (options.right + options.left) / 2),
                       canvas.height/2 + yPixels);
+        ctx.scale(stretch, 1);
         ctx.font = options.font;
         ctx.textAlign = 'center';
         drawNumberLine();
@@ -100,6 +103,7 @@ function makeNumberLine(canvas, yPixels, options) {
         ctx.font = 'italic ' + options.font;
         arrows.forEach(drawArrow);
         ctx.restore();
+        stretch = 1;
         shift = 0;
 
         function drawArrow(arrow) {
@@ -246,12 +250,15 @@ function makeNumberLineUI(quiver, canvas, options) {
     function chooseHand(xy) {
         if (xy.y < canvas.height/2) { // XXX hack
             return makeAddHand(show, perform);
+        } else {
+            return makeMultiplyHand(show, perform);
         }
         return emptyHand;
     }
 
     function perform(op, at) {
         at /= bot.scale; // XXX hack
+        if (op === mulOp) at += 1; // XXX hack hack hack
         const target = pickTarget(at, quiver.getArrows());
         if (target !== null) {
             assert(0 <= selection.length && selection.length <= 1);
@@ -314,6 +321,27 @@ function makeAddHand(show, perform) {
         show: (bot, top, arrows, selection) => {
             bot.show(arrows, selection);
             top.show(arrows, selection, adding / bot.scale);
+        },
+    };
+}
+
+function makeMultiplyHand(show, perform) {
+    let xOffset = 0;
+    function moveFromStart(offset) {
+        xOffset = offset.x;
+    }
+    function onEnd() {
+        perform(mulOp, xOffset);
+    }
+    return {
+        moveFromStart,
+        onMove: noOp,
+        onEnd,
+        dragGrid: () => sheet.translate(multiplying),
+        show: (bot, top, arrows, selection) => {
+            const stretch = 1 + xOffset / top.scale;
+            bot.show(arrows, selection, 0, stretch);
+            top.show(arrows, selection);
         },
     };
 }
@@ -410,34 +438,9 @@ function makeMoverHand(arrow, quiver) {
     };
 }
 
-function makeMultiplyHand(ruler, selection, perform) {
-    let multiplying = cnum.one;
-    function moveFromStart(offset) {
-        multiplying = cnum.add(cnum.one, offset);
-    }
-    function onEnd() {
-        perform(mulOp, multiplying);
-    }
-    return {
-        moveFromStart,
-        onMove: noOp,
-        onEnd,
-        dragGrid: () => {
-            ruler.ctx.transform(multiplying.re, multiplying.im, -multiplying.im, multiplying.re, 0, 0);
-        },
-        show: () => {
-            ruler.ctx.strokeStyle = 'green';
-            ruler.drawSpiral(cnum.one, multiplying, multiplying);
-            selection.forEach(arrow => {
-                ruler.drawSpiral(arrow.at, multiplying, cnum.mul(arrow.at, multiplying));
-            });
-        }
-    };
-}
-
 const addOp = {
     color: 'black',
-    labelOffset: {x: 6, y: -14},
+//    labelOffset: {x: 6, y: -14},
     label: arrow => {
         if (arrow.arg1 === arrow.arg2) {
             return '2' + parenthesize(arrow.arg1.label);
@@ -455,7 +458,7 @@ const addOp = {
 
 const mulOp = {
     color: 'black',
-    labelOffset: {x: 6, y: -14},
+//    labelOffset: {x: 6, y: -14},
     label: arrow => {
         if (arrow.arg1 === arrow.arg2) {
             return parenthesize(arrow.arg1.label) + '^2';
@@ -464,10 +467,10 @@ const mulOp = {
         }
     },
     recompute: arrow => {
-        arrow.at = cnum.mul(arrow.arg1.at, arrow.arg2.at);
+        arrow.at = arrow.arg1.at * arrow.arg2.at;
     },
     showProvenance: (arrow, ruler) => {
-        ruler.drawSpiral(arrow.arg1.at, arrow.arg2.at, arrow.at);
+//        ruler.drawSpiral(arrow.arg1.at, arrow.arg2.at, arrow.at);
     },
 };
 
