@@ -118,9 +118,6 @@ function makeNumberLine(canvas, yPixels, options) {
         }
     }
 
-    function left()  { return options.left  + shift; }
-    function right() { return options.right + shift; }
-
     function drawNumberLine() {
         ctx.fillStyle = '#ed9';
         ctx.fillRect(scale * (options.left + shift), 0,
