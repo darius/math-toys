@@ -127,7 +127,6 @@ function makeNumberLine(canvas, yPixels, options) {
     function drawTicks() {
         ctx.lineWidth = 1;
         ctx.textBaseline = options.facing === 1 ? 'top' : 'bottom';
-        console.log('shift', shift);
         const left = Math.floor(options.left + shift);
         const right = Math.ceil(options.right + shift);
         for (let i = left; i <= right; ++i) {
@@ -211,7 +210,6 @@ function makeNumberLineUI(quiver, canvas, options) {
     function onClick(xy) {
         var value = bot.valueFromX(xy.x);
         const choice = pickTarget(value, quiver.getArrows());
-        console.log('click', value, choice);
         if (choice !== null) {
             toggleSelection(choice);
         } else {
@@ -246,16 +244,14 @@ function makeNumberLineUI(quiver, canvas, options) {
     }
 
     function chooseHand(xy) {
-        console.log('xy', xy);
         if (xy.y < canvas.height/2) { // XXX hack
-            console.log('choose add hand');
             return makeAddHand(show, perform);
         }
         return emptyHand;
     }
 
     function perform() {
-        XXX
+        //XXX
     }
 
     let hand = emptyHand;
@@ -283,7 +279,6 @@ function makeNumberLineUI(quiver, canvas, options) {
             } else {
                 onClick(handStartedAt); // XXX or take from where it ends?
             }
-            console.log('end', handStartedAt, strayed);
             hand = emptyHand;
             handStartedAt = undefined;
             show();
@@ -309,18 +304,9 @@ function makeAddHand(show, perform) {
         onEnd,
         dragGrid: () => sheet.translate(adding),
         show: (bot, top, arrows, selection) => {
-            console.log('add show');
             bot.show(arrows, selection);
             top.show(arrows, selection, adding / bot.scale);
         },
-/*
-            sheet.ctx.strokeStyle = 'magenta';
-            sheet.drawLine(cnum.zero, adding);
-            selection.forEach(arrow => {
-                sheet.drawLine(arrow.at, cnum.add(arrow.at, adding));
-            });
-        }
-*/
     };
 }
 
