@@ -248,12 +248,16 @@ function makeNumberLineUI(quiver, canvas, options) {
     }
 
     function chooseHand(xy) {
-        if (xy.y < canvas.height/2) { // XXX hack
+        var at = bot.valueFromX(xy.x);
+        const target = pickTarget(at, quiver.getFreeArrows());
+        if (target !== null) {
+            return makeMoverHand(target, quiver, top);
+        } else if (xy.y < canvas.height/2) { // XXX hack
             return makeAddHand(show, perform);
         } else {
             return makeMultiplyHand(show, perform);
         }
-        return emptyHand;
+        return emptyHand; // XXX make the above tests pickier, so this could happen?
     }
 
     function perform(op, at) {
@@ -302,6 +306,26 @@ function makeNumberLineUI(quiver, canvas, options) {
 
     return {
         show,
+    };
+}
+
+function makeMoverHand(arrow, quiver, ruler) {
+    const startAt = arrow.at;
+    function moveFromStart(offset) {
+        arrow.at = startAt + offset.x / ruler.scale;
+    }
+    function onMove() {
+        quiver.onMove();
+    }
+    return {
+        moveFromStart,
+        onMove,
+        onEnd: onMove,     // TODO: add to the undo stack
+        dragGrid: noOp,
+        show: (bot, top, arrows, selection) => {
+            bot.show(arrows, selection);
+            top.show(arrows, selection);
+        },
     };
 }
 
@@ -391,25 +415,6 @@ function addPointerListener(canvas, listener) {
     }));
 }
 
-const constantOp = {
-    color: 'blue',
-    labelOffset: {x: -12, y: 6},
-    label: arrow => {
-        const z = arrow.at;
-        if      (z.im === 0) return '' + z.re;
-        else if (z.re === 0) return fmtImag(z.im);
-        else                 return '' + z.re + '+' + fmtImag(z.im);
-    },
-    recompute: noOp,
-    showProvenance: noOp,
-};
-
-function fmtImag(im) {
-    let s = '';
-    if (im !== 1) s += im;
-    return s + 'i';
-}
-
 const variableOp = {
     color: 'black',
 //    labelOffset: {x: 6, y: -14},
@@ -420,23 +425,6 @@ const variableOp = {
 //        ruler.drawSpiral(cnum.one, arrow.at, arrow.at);
     },
 };
-
-function makeMoverHand(arrow, quiver) {
-    const startAt = arrow.at;
-    function moveFromStart(offset) {
-        arrow.at = cnum.add(startAt, offset);
-    }
-    function onMove() {
-        quiver.onMove();
-    }
-    return {
-        moveFromStart,
-        onMove,
-        onEnd: onMove,     // TODO: add to the undo stack
-        dragGrid: noOp,
-        show: noOp,
-    };
-}
 
 const addOp = {
     color: 'black',
@@ -494,7 +482,6 @@ exports.mathtoys.ruler = {
     makeNumberLine,
     makeNumberLineUI,
 
-    constantOp,
     variableOp,
     addOp,
     mulOp,
