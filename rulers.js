@@ -89,7 +89,7 @@ function makeNumberLine(canvas, yPixels, options) {
     let shift = 0;
 
     function show(arrows, selection, shift_) {
-        shift = shift_ === void 0 ? 0 : shift_;
+        shift = shift_ === void 0 ? 0 : -shift_;
         ctx.save();
         ctx.translate(width/2 - scale * (shift + (options.right + options.left) / 2),
                       canvas.height/2 + yPixels);
@@ -250,8 +250,16 @@ function makeNumberLineUI(quiver, canvas, options) {
         return emptyHand;
     }
 
-    function perform() {
-        //XXX
+    function perform(op, at) {
+        at /= bot.scale; // XXX hack
+        const target = pickTarget(at, quiver.getArrows());
+        if (target !== null) {
+            assert(0 <= selection.length && selection.length <= 1);
+            selection.forEach((argument, i) => {
+                selection[i] = quiver.add({op: op, arg1: argument, arg2: target});
+            });
+            assert(0 <= selection.length && selection.length <= 1);
+        }
     }
 
     let hand = emptyHand;
@@ -315,8 +323,8 @@ function distance(p1, p2) {
 }
 
 function sub(p1, p2) {
-    return {x: p2.x - p1.x,
-            y: p2.y - p1.y};
+    return {x: p1.x - p2.x,
+            y: p1.y - p2.y};
 }
 
 function addPointerListener(canvas, listener) {
