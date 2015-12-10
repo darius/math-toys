@@ -86,9 +86,12 @@ function makeNumberLine(canvas, yPixels, options) {
     const height = 40;
     const scale = width / (options.right - options.left);
 
-    function show(arrows, selection) {
+    let shift = 0;
+
+    function show(arrows, selection, shift_) {
+        shift = shift_ === void 0 ? 0 : shift_;
         ctx.save();
-        ctx.translate(width/2 - scale * (options.right + options.left) / 2,
+        ctx.translate(width/2 - scale * (shift + (options.right + options.left) / 2),
                       canvas.height/2 + yPixels);
         ctx.font = options.font;
         ctx.textAlign = 'center';
@@ -97,6 +100,7 @@ function makeNumberLine(canvas, yPixels, options) {
         ctx.font = 'italic ' + options.font;
         arrows.forEach(drawArrow);
         ctx.restore();
+        shift = 0;
 
         function drawArrow(arrow) {
             if (selection.some(selected => selected === arrow)) {
@@ -110,15 +114,23 @@ function makeNumberLine(canvas, yPixels, options) {
         }
     }
 
+    function left()  { return options.left  + shift; }
+    function right() { return options.right + shift; }
+
     function drawNumberLine() {
         ctx.fillStyle = '#ed9';
-        ctx.fillRect(scale * options.left, 0, width, height);
+        ctx.fillRect(scale * (options.left + shift), 0,
+                     width + Math.abs(scale * shift), // XXX actually think about this
+                     height);
     }
 
     function drawTicks() {
         ctx.lineWidth = 1;
         ctx.textBaseline = options.facing === 1 ? 'top' : 'bottom';
-        for (let i = options.left; i <= options.right; ++i) { // XXX what about noninteger bounds?
+        console.log('shift', shift);
+        const left = Math.floor(options.left + shift);
+        const right = Math.ceil(options.right + shift);
+        for (let i = left; i <= right; ++i) {
             ctx.fillStyle = 'grey';
             for (let j = 1; j <= 9; ++j) {
                 drawTick(i + j/10, 10);
@@ -182,8 +194,7 @@ function makeNumberLineUI(quiver, canvas, options) {
     function show() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         const arrows = quiver.getArrows();
-        bot.show(arrows, selection);
-        top.show(arrows, selection);
+        hand.show(bot, top, arrows, selection);
     }
 
     const emptyHand = {
@@ -191,7 +202,10 @@ function makeNumberLineUI(quiver, canvas, options) {
         onMove: noOp,
         onEnd: noOp,
         dragGrid: noOp,
-        show: noOp,
+        show: (bot, top, arrows, selection) => {
+            bot.show(arrows, selection);
+            top.show(arrows, selection);
+        },
     };
 
     function onClick(xy) {
@@ -232,7 +246,16 @@ function makeNumberLineUI(quiver, canvas, options) {
     }
 
     function chooseHand(xy) {
+        console.log('xy', xy);
+        if (xy.y < canvas.height/2) { // XXX hack
+            console.log('choose add hand');
+            return makeAddHand(show, perform);
+        }
         return emptyHand;
+    }
+
+    function perform() {
+        XXX
     }
 
     let hand = emptyHand;
@@ -269,6 +292,35 @@ function makeNumberLineUI(quiver, canvas, options) {
 
     return {
         show,
+    };
+}
+
+function makeAddHand(show, perform) {
+    let adding = 0;
+    function moveFromStart(offset) {
+        adding = offset.x;
+    }
+    function onEnd() {
+        perform(addOp, adding);
+    }
+    return {
+        moveFromStart,
+        onMove: noOp,
+        onEnd,
+        dragGrid: () => sheet.translate(adding),
+        show: (bot, top, arrows, selection) => {
+            console.log('add show');
+            bot.show(arrows, selection);
+            top.show(arrows, selection, adding / bot.scale);
+        },
+/*
+            sheet.ctx.strokeStyle = 'magenta';
+            sheet.drawLine(cnum.zero, adding);
+            selection.forEach(arrow => {
+                sheet.drawLine(arrow.at, cnum.add(arrow.at, adding));
+            });
+        }
+*/
     };
 }
 
@@ -361,29 +413,6 @@ function makeMoverHand(arrow, quiver) {
         onEnd: onMove,     // TODO: add to the undo stack
         dragGrid: noOp,
         show: noOp,
-    };
-}
-
-function makeAddHand(ruler, selection, perform) {
-    let adding = cnum.zero;
-    function moveFromStart(offset) {
-        adding = offset;
-    }
-    function onEnd() {
-        perform(addOp, adding);
-    }
-    return {
-        moveFromStart,
-        onMove: noOp,
-        onEnd,
-        dragGrid: () => ruler.translate(adding),
-        show: () => {
-            ruler.ctx.strokeStyle = 'magenta';
-            ruler.drawLine(cnum.zero, adding);
-            selection.forEach(arrow => {
-                ruler.drawLine(arrow.at, cnum.add(arrow.at, adding));
-            });
-        }
     };
 }
 
