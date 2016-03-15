@@ -5,13 +5,13 @@
 // Return an object mapping variable to solution, for those
 // variables that eqns constrains to a value.
 function solveEquations(eqns) {
-    var reduced = reduceEquations(eqns);
+    const reduced = reduceEquations(eqns);
     if (!reduced.isConsistent) {
         return {};
     } else {
-        var result = {};
-        reduced.equations.forEach(function (eqn) {
-            var v = eqn.definesVar();
+        const result = {};
+        reduced.equations.forEach(eqn => {
+            const v = eqn.definesVar();
             if (v !== null) {
 //                result[v] = rmul(-1, eqn.constant);
                 result[v] = -eqn.constant;
@@ -25,12 +25,11 @@ function solveEquations(eqns) {
 // defined by a single equation. (The result may be inconsistent 
 // or underconstrained.)
 function reduceEquations(eqns) {
-    for (var i = 0; i < eqns.length; ++i) {
-        var eqi = eqns[i];
-        var v = eqi.aVariable();
+    for (let i = 0; i < eqns.length; ++i) {
+        const eqi = eqns[i];
+        const v = eqi.aVariable();
         if (v === null) continue;
-        for (var j = 0; j < eqns.length; ++j) {
-            if (i === j) continue;
+        for (let j = 0; j < i; ++j) {
             eqns[j] = eqns[j].substituteFor(v, eqi);
             if (eqns[j].isInconsistent()) {
                 return {isConsistent: false};
@@ -38,8 +37,8 @@ function reduceEquations(eqns) {
         }
     };
     return {isConsistent: true,
-            equations: (eqns.filter(function(eqn) { return !eqn.isTautology(); })
-                            .map(function(eqn) { return eqn.normalize(); }))};
+            equations: (eqns.filter(eqn => !eqn.isTautology())
+                            .map(eqn => eqn.normalize()))};
 }
 
 // constant: a number
@@ -64,25 +63,25 @@ function makeLinearExpr(constant, terms) {
     }
 
     function coefficient(v) {
-        for (var i = 0; i < terms.length; ++i)
-            if (terms[i][0] === v)
-                return terms[i][1];
+        for (let term of terms)
+            if (term[0] === v)
+                return term[1];
         return 0;               // XXX zero for complex
     }
 
     // Return an equivalent equation with var eliminated by
     // resolving against eq (which must have a term for var).
     function substituteFor(v, expr) {
-//        var c = rmul(-1, div(coefficient(v), expr.coefficient(v))
-        var c = -coefficient(v) / expr.coefficient(v);
+//        let c = rmul(-1, div(coefficient(v), expr.coefficient(v))
+        const c = -coefficient(v) / expr.coefficient(v);
         return combine(1, expr, c);
     }
 
     function combine(c, e2, c2) {
-        var vars = new Set(getVariables());
-        e2.getVariables().forEach(function(v2) { vars.add(v2); });
-        var combination = [];
-        for (var v of vars.values()) {
+        const vars = new Set(getVariables());
+        e2.getVariables().forEach(v2 => vars.add(v2));
+        const combination = [];
+        for (let v of vars.values()) {
             combination.push([v, (c * coefficient(v) // XXX or with complex arith
                                   + c2 * e2.coefficient(v))]);
         }
@@ -117,14 +116,10 @@ function makeLinearExpr(constant, terms) {
         getVariables: getVariables,
         coefficient: coefficient,
         aVariable: aVariable,
-        isInconsistent: function() {
-            return isConstant() && constant !== 0; // XXX zero for complex
-        },
-        isTautology: function() {
-            return isConstant() && constant === 0;
-        },
-        definesVar: function() {
-            if (terms.length === 1 && terms[0][1] == 1) return terms[0][0];
+        isInconsistent: () => isConstant() && constant !== 0, // XXX zero for complex
+        isTautology:    () => isConstant() && constant === 0,
+        definesVar: () => {
+            if (terms.length === 1 && terms[0][1] === 1) return terms[0][0];
             return null;
         },
         substituteFor: substituteFor,
@@ -133,4 +128,4 @@ function makeLinearExpr(constant, terms) {
     };               
 }
 
-var zeroExpr = makeLinearExpr(0, []);
+const zeroExpr = makeLinearExpr(0, []);
