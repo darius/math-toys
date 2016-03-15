@@ -42,11 +42,22 @@ function reduceEquations(eqns) {
                             .map(function(eqn) { return eqn.normalize(); }))};
 }
 
+// constant: a number
+// terms: an array of [variable, coefficient] pairs (all variables distinct).
+// Represents: constant + sum{i}: var_i*coeff_i
 function makeLinearExpr(constant, terms) {
     // Invariant: all variables distinct.
     // Invariant: no term with a 0 coefficient.
 
     terms = terms.filter(function(pair) { return pair[1] !== 0; });
+
+    function show() {
+        let sum = '' + constant;
+        for (let term of terms) {
+            sum += ` + ${term[1]} ${term[0]}`;
+        }
+        return sum;
+    }
 
     function getVariables() {
         return terms.map(function(pair) { return pair[0]; });
@@ -100,6 +111,7 @@ function makeLinearExpr(constant, terms) {
     };
 
     return {
+        show: show,
         constant: constant,
         _terms: terms,
         getVariables: getVariables,

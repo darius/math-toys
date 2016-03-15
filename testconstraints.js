@@ -8,19 +8,17 @@ console.log(reduceEquations([]));
 console.log(reduceEquations([mkeq(0, [])]));
 
 var eqs0 = [mkeq(10, [['x', 1]])];
-console.log('eqs0');
+console.log('eqs0', eqs0[0].show());
 console.log(reduceEquations(eqs0));
 console.log(solveEquations(eqs0));
 
 var eqs1 = [mkeq(10, [['x', 2]])];
-console.log('eqs1');
+console.log('eqs1', eqs1[0].show());
 console.log(reduceEquations(eqs1));
 console.log(solveEquations(eqs1));
 
-
 var eqs10 = [mkeq(13, [['x', 1]]),
              mkeq(7, [['y', 2]])];
-console.log('eqs10');
+console.log('eqs10', eqs10[0].show(), ',', eqs10[1].show());
 console.log(reduceEquations(eqs10));
 console.log(solveEquations(eqs10));
-
