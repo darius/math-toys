@@ -209,7 +209,7 @@ function makeNumberLineUI(quiver, canvas, options) {
     };
 
     function onClick(xy) {
-        var value = bot.valueFromX(xy.x);
+        const value = bot.valueFromX(xy.x);
         const choice = pickTarget(value, quiver.getArrows());
         if (choice !== null) {
             toggleSelection(choice);
@@ -245,7 +245,7 @@ function makeNumberLineUI(quiver, canvas, options) {
     }
 
     function chooseHand(xy) {
-        var at = bot.valueFromX(xy.x);
+        const at = bot.valueFromX(xy.x);
         const target = pickTarget(at, quiver.getFreeArrows());
         if (target !== null) {
             return makeMoverHand(target, quiver, top);
