@@ -2,6 +2,8 @@
 
 'use strict';
 
+// const cnum = mathtoys.complex;
+
 // Return an object mapping variable to solution, for those
 // variables that eqns constrains to a value.
 function solveEquations(eqns) {
@@ -13,7 +15,7 @@ function solveEquations(eqns) {
         reduced.equations.forEach(eqn => {
             const v = eqn.definesVar();
             if (v !== null) {
-//                result[v] = rmul(-1, eqn.constant);
+//                result[v] = cnum.neg(eqn.constant);
                 result[v] = -eqn.constant;
             }
         });
@@ -48,7 +50,7 @@ function makeLinearExpr(constant, terms) {
     // Invariant: all variables distinct.
     // Invariant: no term with a 0 coefficient.
 
-    terms = terms.filter(function(pair) { return pair[1] !== 0; });
+    terms = terms.filter(pair => pair[1] !== 0);
 
     function show() {
         let sum = '' + constant;
@@ -59,7 +61,7 @@ function makeLinearExpr(constant, terms) {
     }
 
     function getVariables() {
-        return terms.map(function(pair) { return pair[0]; });
+        return terms.map(pair => pair[0]);
     }
 
     function coefficient(v) {

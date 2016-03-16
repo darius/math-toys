@@ -45,6 +45,11 @@ function conjugate(v) {
             im: -v.im};
 }
 
+function neg(v) {
+    return {re: -v.re,
+            im: -v.im};
+}
+
 function rmul(r, v) {
     return {re: r * v.re,
             im: r * v.im};
@@ -82,6 +87,7 @@ exports.mathtoys.complex = {
     mul,
     div,
     reciprocal,
+    neg,
     conjugate,
     rmul,
     roughSqrt,
