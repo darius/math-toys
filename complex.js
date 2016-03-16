@@ -17,13 +17,18 @@ function distance(u, v) {
     return magnitude(sub(u, v));
 }
 
+function eq(u, v) {
+    return (   u.re === v.re
+            && u.im === v.im);
+}
+
 function add(u, v) {
     return {re: u.re + v.re,
             im: u.im + v.im};
 }
 
 function sub(u, v) {
-    return add(u, rmul(-1, v));
+    return add(u, rneg(v));
 }
 
 function mul(u, v) {
@@ -76,12 +81,17 @@ function roughCubeRoot(cube) {
     return z;
 }
 
+function show(z) {
+    return `(${z.re}+${z.im}i)`;
+}
+
 if (exports.mathtoys === void 0) exports.mathtoys = {};
 exports.mathtoys.complex = {
     zero,
     one,
     magnitude,
     distance,
+    eq,
     add,
     sub,
     mul,
@@ -91,5 +101,6 @@ exports.mathtoys.complex = {
     conjugate,
     rmul,
     roughSqrt,
+    show,
 };
 })(this);

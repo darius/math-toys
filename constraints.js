@@ -1,11 +1,27 @@
-// Solving linear equality constraints
+// Solving linear equality constraints.
+
+// I decided to do this over complex numbers. Another approach would
+// be to solve constraints over real numbers, and translate from and
+// to complex numbers in the client. Probably that'd be somewhat more
+// efficient and somewhat more trouble to code up, and I'm choosing 
+// to care the most about the latter.
 
 'use strict';
 
-// const cnum = mathtoys.complex;
+const cnum = mathtoys.complex;
+
+function showSolution(solution) {
+    let result = '';
+    for (let v in solution) {
+        if (result !== '') result += '; ';
+        result += `${v} = ${cnum.show(solution[v])}`;
+    }
+    return result;
+}
 
 // Return an object mapping variable to solution, for those
 // variables that eqns constrains to a value.
+// XXX should return a Map now
 function solveEquations(eqns) {
     const reduced = reduceEquations(eqns);
     if (!reduced.isConsistent) {
@@ -15,8 +31,7 @@ function solveEquations(eqns) {
         reduced.equations.forEach(eqn => {
             const v = eqn.definesVar();
             if (v !== null) {
-//                result[v] = cnum.neg(eqn.constant);
-                result[v] = -eqn.constant;
+                result[v] = cnum.neg(eqn.constant);
             }
         });
         return result;
@@ -43,19 +58,19 @@ function reduceEquations(eqns) {
                             .map(eqn => eqn.normalize()))};
 }
 
-// constant: a number
+// constant: a complex number
 // terms: an array of [variable, coefficient] pairs (all variables distinct).
 // Represents: constant + sum{i}: var_i*coeff_i
 function makeLinearExpr(constant, terms) {
     // Invariant: all variables distinct.
     // Invariant: no term with a 0 coefficient.
 
-    terms = terms.filter(pair => pair[1] !== 0);
+    terms = terms.filter(pair => !cnum.eq(pair[1], cnum.zero));
 
     function show() {
-        let sum = '' + constant;
+        let sum = cnum.show(constant);
         for (let term of terms) {
-            sum += ` + ${term[1]} ${term[0]}`;
+            sum += ` + ${cnum.show(term[1])} ${term[0]}`;
         }
         return sum;
     }
@@ -68,15 +83,14 @@ function makeLinearExpr(constant, terms) {
         for (let term of terms)
             if (term[0] === v)
                 return term[1];
-        return 0;               // XXX zero for complex
+        return cnum.zero;
     }
 
     // Return an equivalent equation with var eliminated by
     // resolving against eq (which must have a term for var).
     function substituteFor(v, expr) {
-//        let c = rmul(-1, div(coefficient(v), expr.coefficient(v))
-        const c = -coefficient(v) / expr.coefficient(v);
-        return combine(1, expr, c);
+        const c = cnum.neg(cnum.div(coefficient(v), expr.coefficient(v)))
+        return combine(cnum.one, expr, c);
     }
 
     function combine(c, e2, c2) {
@@ -84,22 +98,23 @@ function makeLinearExpr(constant, terms) {
         e2.getVariables().forEach(v2 => vars.add(v2));
         const combination = [];
         for (let v of vars.values()) {
-            combination.push([v, (c * coefficient(v) // XXX or with complex arith
-                                  + c2 * e2.coefficient(v))]);
+            combination.push([v, cnum.add(cnum.mul(c, coefficient(v)),
+                                          cnum.mul(c2, e2.coefficient(v)))]);
         }
-        return makeLinearExpr(c * constant + c2 * e2.constant,
+        return makeLinearExpr(cnum.add(cnum.mul(c, constant),
+                                       cnum.mul(c2, e2.constant)),
                               combination);
     }
     
     // Return an equivalent equation with a variable's coefficient
     // rescaled to 1.
     function normalize() {
-        return scale(1 / coefficient(aVariable()));
+        return scale(cnum.reciprocal(coefficient(aVariable())));
     }
 
     // Return me multiplied by c.
     function scale(c) {
-        return combine(c, zeroExpr, 0);
+        return combine(c, zeroExpr, cnum.zero);
     }
 
     function isConstant() {
@@ -118,10 +133,10 @@ function makeLinearExpr(constant, terms) {
         getVariables: getVariables,
         coefficient: coefficient,
         aVariable: aVariable,
-        isInconsistent: () => isConstant() && constant !== 0, // XXX zero for complex
-        isTautology:    () => isConstant() && constant === 0,
+        isInconsistent: () => isConstant() && !cnum.eq(constant, cnum.zero),
+        isTautology:    () => isConstant() &&  cnum.eq(constant, cnum.zero),
         definesVar: () => {
-            if (terms.length === 1 && terms[0][1] === 1) return terms[0][0];
+            if (terms.length === 1 && cnum.eq(terms[0][1], cnum.one)) return terms[0][0];
             return null;
         },
         substituteFor: substituteFor,
@@ -130,4 +145,4 @@ function makeLinearExpr(constant, terms) {
     };               
 }
 
-const zeroExpr = makeLinearExpr(0, []);
+const zeroExpr = makeLinearExpr(cnum.zero, []);
