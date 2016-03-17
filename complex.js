@@ -28,7 +28,7 @@ function add(u, v) {
 }
 
 function sub(u, v) {
-    return add(u, rneg(v));
+    return add(u, neg(v));
 }
 
 function mul(u, v) {
