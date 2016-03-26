@@ -271,6 +271,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
 
     const zeroArrow = quiver.add({op: constantOp, at: cnum.zero});
     const oneArrow  = quiver.add({op: constantOp, at: cnum.one});
+    quiver.add({op: constantOp, at: cnum.neg(cnum.one)});
 
     const emptyHand = {
         moveFromStart: noOp,
