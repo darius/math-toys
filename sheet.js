@@ -34,6 +34,13 @@ function makeQuiver() {
         return arrows.filter(arrow => arrow.op === variableOp);
     }
 
+    function findLabel(label) {
+        for (let arrow of arrows) {
+            if (arrow.label === label) return arrow;
+        }
+        return null;
+    }
+
     function add(arrow) {
         arrow.label = arrow.op.label(arrow, quiver);
         arrows.push(arrow);
@@ -62,6 +69,7 @@ function makeQuiver() {
     const quiver = {
         add,
         addWatcher,
+        findLabel,
         isEmpty,
         getArrows,
         getFreeArrows,
@@ -277,7 +285,8 @@ function makeSheetUI(quiver, canvas, options, controls) {
         if (choice !== null) {
             toggleSelection(choice);
         } else {
-            quiver.add({op: variableOp, at: at});
+            const arrow = quiver.add({op: variableOp, at: at});
+            renameFrom.value = arrow.label;
         }
     }
 

@@ -3,12 +3,21 @@
 const cnum = mathtoys.complex;
 const sh = mathtoys.sheet;
 
-let quiver;                     // for debug
+let quiver, ui;                     // global/mutable for debugging
 
 function onLoad() {
     quiver = sh.makeQuiver();
-    const ui = sh.makeSheetUI(quiver, canvas, {}, {});
+    ui = sh.makeSheetUI(quiver, canvas, {}, {});
     ui.show();
+}
+
+function onRename() {
+    const arrow = quiver.findLabel(renameFrom.value);
+    const newLabel = renameTo.value.trim();
+    if (arrow !== null && newLabel !== '') {
+        arrow.label = newLabel;
+        ui.show();
+    }
 }
 
 function tempTest() {
