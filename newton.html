@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+  <meta http-equiv="encoding" content="utf-8">
+</head>
+
+<body bgcolor="#fff" onload="onLoad()">
+  <canvas id="canvas" width="720" height="720"
+          style="background-color: #eee"
+          >
+  </canvas>
+  Rename <input type="text" id="renameFrom"> to <input type="text" id="renameTo"> <input type="button" value="Rename" onclick="onRename()">
+
+  <script type="text/javascript">
+    'use strict';
+    var canvas     = document.getElementById("canvas");
+    var renameFrom = document.getElementById("renameFrom");
+    var renameTo   = document.getElementById("renameTo");
+  </script>
+  <script type="text/javascript" src="spline_interpolate.js"></script>
+  <script type="text/javascript" src="util.js"></script>
+  <script type="text/javascript" src="pointing.js"></script>
+  <script type="text/javascript" src="complex.js"></script>
+  <script type="text/javascript" src="autodiff.js"></script>
+  <script type="text/javascript" src="newton.js"></script>
+  <script type="text/javascript" src="sheet.js"></script>
+  <script type="text/javascript" src="testnewton.js"></script>
+
+</body>

@@ -218,6 +218,7 @@ function makeSheet(canvas, options) {
 function makeSheetUI(quiver, canvas, options, controls) {
     options = override({adding:      true,
                         multiplying: true,
+                        preshow:     () => null,
                         showGrid:    true},
                        options);
 
@@ -229,6 +230,8 @@ function makeSheetUI(quiver, canvas, options, controls) {
     const selection = [];
 
     function show() {
+        options.preshow();
+
         const ctx = sheet.ctx;
         ctx.save();
         sheet.clear();
@@ -266,6 +269,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
     }
 
     function isCandidatePick(at, arrow) {
+        if (arrow.isScenery) return false;
         return cnum.distance(at, arrow.at) <= minSelectionD;
     }
 
@@ -372,6 +376,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
 
     return {
         show,
+        toggleSelection,
     };
 }
 

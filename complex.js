@@ -22,6 +22,12 @@ function eq(u, v) {
             && u.im === v.im);
 }
 
+function approxEqual(u, v) {
+    // XXX super arbitrary
+    return (   Math.abs(u.re - v.re) < 1e-6
+            && Math.abs(u.im - v.im) < 1e-6);
+}
+
 function add(u, v) {
     return {re: u.re + v.re,
             im: u.im + v.im};
@@ -92,6 +98,7 @@ exports.mathtoys.complex = {
     magnitude,
     distance,
     eq,
+    approxEqual,
     add,
     sub,
     mul,
