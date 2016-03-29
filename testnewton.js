@@ -5,13 +5,17 @@ const adiff = mathtoys.autodiff;
 const newton = mathtoys.newton;
 const sh = mathtoys.sheet;
 
-let quiver, ui, zArrow, root;   // global/mutable for debugging
+let quiver, ui, zArrow, guess, root;   // global/mutable for debugging
 
 function onLoad() {
     quiver = sh.makeQuiver();
 
     zArrow = quiver.add({op: sh.variableOp, at: {re: 1, im: 1}});
     zArrow.label = 'z';
+    
+    // XXX we want this to be movable but not selectable -- not exactly isScenery
+    guess = quiver.add({op: sh.variableOp, at: {re: 1.6, im: 2.4}});
+    guess.label = 'guess';
     
     root = quiver.add({op: sh.constantOp, at: cnum.zero, isScenery: true});
     root.label = 'root';
@@ -43,9 +47,9 @@ function preshow() {
         }
         return walk(fnArrow);
     }
-    // TODO: add an arrow controlling the starting guess
+
     try {
-        root.at = newton.findRoot(evaluateFn, {re: 1.6, im: 2.4}); // XXX super arbitrary
+        root.at = newton.findRoot(evaluateFn, guess.at);
     } catch (e) {
         console.log(e);
     }
