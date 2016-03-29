@@ -14,11 +14,11 @@ function findRoot(f, value) {
     for (let steps = 0; steps < 20; ++steps) {
         const fv = f(value);
         if (cnum.eq(fv.d, cnum.zero)) {
-            // Zero derivative: we succeeded or we're stuck. Which?
+            // Zero derivative: we succeeded or we're stuck.
             if (cnum.approxEqual(fv.v, cnum.zero)) return value;
             throw new Error("Newton got stuck at a zero derivative")
         }
-//        console.log(mathtoys.autodiff.show(fv));
+//        console.log("diff", mathtoys.autodiff.show(fv));
         const z = cnum.sub(value, cnum.div(fv.v, fv.d));
         if (cnum.approxEqual(value, z)) return z;
         value = z;

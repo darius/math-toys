@@ -22,10 +22,11 @@ function eq(u, v) {
             && u.im === v.im);
 }
 
+const tolerance = 1e-4;    // XXX super arbitrary
+
 function approxEqual(u, v) {
-    // XXX super arbitrary
-    return (   Math.abs(u.re - v.re) < 1e-6
-            && Math.abs(u.im - v.im) < 1e-6);
+    return (   Math.abs(u.re - v.re) < tolerance
+            && Math.abs(u.im - v.im) < tolerance);
 }
 
 function add(u, v) {
