@@ -5,7 +5,7 @@ const adiff = mathtoys.autodiff;
 const newton = mathtoys.newton;
 const sh = mathtoys.sheet;
 
-let quiver, ui, zArrow, guess, root;   // global/mutable for debugging
+let quiver, ui, zArrow, guess, steps, root;   // global/mutable for debugging
 
 function onLoad() {
     quiver = sh.makeQuiver();
@@ -17,6 +17,12 @@ function onLoad() {
     guess = quiver.add({op: sh.variableOp, at: {re: 1.6, im: 2.4}});
     guess.label = 'guess';
     
+    steps = [1,2,3].map(i => {
+        const arrow = quiver.add({op: sh.constantOp, at: guess.at, isScenery: true});
+        arrow.label = `g${i}`;
+        return arrow;
+    });
+
     root = quiver.add({op: sh.constantOp, at: cnum.zero, isScenery: true});
     root.label = 'root';
     
@@ -49,7 +55,7 @@ function preshow() {
     }
 
     try {
-        root.at = newton.findRoot(evaluateFn, guess.at);
+        root.at = newton.findRoot(evaluateFn, guess.at, steps);
     } catch (e) {
         console.log(e);
     }

@@ -10,8 +10,9 @@ const cnum = mathtoys.complex;
 // inputs the current implementation will fail, throwing an error,
 // even though z1 would exist.) Use Newton's method with value as the
 // starting guess for z.
-function findRoot(f, value) {
-    for (let steps = 0; steps < 20; ++steps) {
+// arrows is a hack for plotting the first few steps.
+function findRoot(f, value, arrows) {
+    for (let step = 0; step < 20; ++step) {
         const fv = f(value);
         if (cnum.eq(fv.d, cnum.zero)) {
             // Zero derivative: we succeeded or we're stuck.
@@ -22,6 +23,9 @@ function findRoot(f, value) {
         const z = cnum.sub(value, cnum.div(fv.v, fv.d));
         if (cnum.approxEqual(value, z)) return z;
         value = z;
+        if (arrows && step < arrows.length) {
+            arrows[step].at = z;
+        }
     }
     throw new Error("Newton didn't converge")
 }
