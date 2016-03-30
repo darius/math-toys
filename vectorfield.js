@@ -18,7 +18,7 @@ function onLoad() {
     sheet = sh.makeSheet(canvas2);
     sheet.drawGrid();
     sheet.ctx.strokeStyle = 'black';
-    drawMap(sheet, z => z, 0.05, 15);
+    sh.drawVectorField(sheet, z => z, 0.05, 15);
 
     quiver.addWatcher(onChange);
 
@@ -79,7 +79,7 @@ function doUpdates() {
 function doUpdate(pair) {
     const savedAt = xVar.at;
     watching = false;
-    console.log('doUpdate', pair[0].label);
+//    console.log('doUpdate', pair[0].label);
 
     const arrow = pair[0];
     const sheet = pair[1];
@@ -97,46 +97,9 @@ function doUpdate(pair) {
             return arrow.at;
         }
     }
-    drawMap(sheet, f, 0.05, 15);
+    sh.drawVectorField(sheet, f, 0.05, 15);
 
     xVar.at = savedAt;     // XXX ugh hack
     quiver.onMove();
     watching = true;
-}
-
-function drawMap(sheet, f, vectorScale, spacing) {
-    const ctx = sheet.ctx;
-    ctx.globalAlpha = 0.25;
-    const height = sheet.canvas.height;
-    const width  = sheet.canvas.width;
-    for (let y = 0; y < height; y += spacing) {
-        for (let x = 0; x < width; x += spacing) {
-            const z = sheet.pointFromXY({x: x, y: y});
-            drawStreamline(sheet, z, f, vectorScale);
-        }
-    }
-}
-
-function drawStreamline(sheet, z, f, vectorScale) {
-    const ctx = sheet.ctx;
-    const scale = sheet.scale;
-    const nsteps = 10;
-    for (let i = 0; i < nsteps; ++i) {
-        ctx.lineWidth = (nsteps-i) * 0.5;
-        const dz = cnum.rmul(vectorScale/nsteps, f(z));
-        if (1 && scale*0.03 < cnum.magnitude(dz)) {
-            // We going too far and might end up with random-looking
-            // sharp-angled paths. Stop and let this streamline get
-            // approximately filled in from some other starting point.
-            break;
-        }
-        const z1 = cnum.add(z, dz);
-
-        ctx.beginPath();
-        ctx.moveTo(scale*z.re, scale*z.im);
-        ctx.lineTo(scale*z1.re, scale*z1.im);
-        ctx.stroke();
-
-        z = z1;
-    }
 }
