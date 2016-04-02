@@ -54,6 +54,8 @@ function preshow() {
         return walk(fnArrow);
     }
 
+//    sh.drawVectorField(ui.sheet, z => evaluateFn(z).v, 0.05, 15);
+    sh.drawVectorField(ui.sheet, z => evaluateFn(z).d, 0.05, 25);
     try {
         root.at = newton.findRoot(evaluateFn, guess.at, steps);
     } catch (e) {

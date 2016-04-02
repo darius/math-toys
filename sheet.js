@@ -230,8 +230,6 @@ function makeSheetUI(quiver, canvas, options, controls) {
     const selection = [];
 
     function show() {
-        options.preshow();
-
         const ctx = sheet.ctx;
         ctx.save();
         sheet.clear();
@@ -239,6 +237,9 @@ function makeSheetUI(quiver, canvas, options, controls) {
         ctx.save();
         hand.dragGrid();
         if (options.showGrid) sheet.drawGrid();
+
+        options.preshow();
+
         ctx.fillStyle = 'red';
         selection.forEach(showArrowSelected);
         ctx.restore();
@@ -375,6 +376,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
     });
 
     return {
+        sheet,
         show,
         toggleSelection,
     };
@@ -583,6 +585,8 @@ function computeSpiralArc(u, v, uv) {
 
 function drawVectorField(sheet, f, vectorScale, spacing) {
     const ctx = sheet.ctx;
+    ctx.save();
+    ctx.strokeStyle = 'black';
     ctx.globalAlpha = 0.25;
     const height = sheet.canvas.height;
     const width  = sheet.canvas.width;
@@ -592,6 +596,7 @@ function drawVectorField(sheet, f, vectorScale, spacing) {
             drawStreamline(sheet, z, f, vectorScale);
         }
     }
+    ctx.restore();
 }
 
 function drawStreamline(sheet, z, f, vectorScale) {
@@ -599,7 +604,7 @@ function drawStreamline(sheet, z, f, vectorScale) {
     const scale = sheet.scale;
     const nsteps = 10;
     for (let i = 0; i < nsteps; ++i) {
-        ctx.lineWidth = (nsteps-i) * 0.5;
+        ctx.lineWidth = (nsteps-i) * 0.25;
         const dz = cnum.rmul(vectorScale/nsteps, f(z));
         if (1 && scale*0.03 < cnum.magnitude(dz)) {
             // We going too far and might end up with random-looking

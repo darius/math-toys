@@ -5,20 +5,20 @@
 const cnum = mathtoys.complex;
 const sh = mathtoys.sheet;
 
-let quiver, sheet;
-let xVar;
+let quiver, sheet, ui;
+let zVar;
 
 function onLoad() {
     quiver = sh.makeQuiver();
-    xVar = quiver.add({op: sh.variableOp, at: {re: 1, im: 1}});
-    xVar.label = 'x';
-    const ui = sh.makeSheetUI(quiver, canvas1, {}, {});
+    zVar = quiver.add({op: sh.variableOp, at: {re: 1, im: 1}});
+    zVar.label = 'z';
+    ui = sh.makeSheetUI(quiver, canvas1, {}, {});
     ui.show();
 
     sheet = sh.makeSheet(canvas2);
     sheet.drawGrid();
     sheet.ctx.strokeStyle = 'black';
-    sh.drawVectorField(sheet, z => z, 0.05, 15);
+    sh.drawVectorField(sheet, z => z, 0.10, 15);
 
     quiver.addWatcher(onChange);
 
@@ -33,6 +33,15 @@ function onLoad() {
 }
 
 let watching = true;
+
+function onRename() {
+    const arrow = quiver.findLabel(renameFrom.value);
+    const newLabel = renameTo.value.trim();
+    if (arrow !== null && newLabel !== '') {
+        arrow.label = newLabel;
+        ui.show();
+    }
+}
 
 // Pairs of [arrow, sheet].
 const pairs = [];
@@ -77,7 +86,7 @@ function doUpdates() {
 }
 
 function doUpdate(pair) {
-    const savedAt = xVar.at;
+    const savedAt = zVar.at;
     watching = false;
 //    console.log('doUpdate', pair[0].label);
 
@@ -92,14 +101,14 @@ function doUpdate(pair) {
         f = z => c;
     } else {
         f = z => {
-            xVar.at = z;
+            zVar.at = z;
             quiver.onMove();
             return arrow.at;
         }
     }
     sh.drawVectorField(sheet, f, 0.05, 15);
 
-    xVar.at = savedAt;     // XXX ugh hack
+    zVar.at = savedAt;     // XXX ugh hack
     quiver.onMove();
     watching = true;
 }

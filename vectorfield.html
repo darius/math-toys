@@ -10,9 +10,14 @@
     <canvas id="canvas1" width="300" height="300">  </canvas>
     <canvas id="canvas2" width="300" height="300">  </canvas>
   </div>
+  Rename <input type="text" id="renameFrom"> to <input type="text" id="renameTo"> <input type="button" value="Rename" onclick="onRename()">
+
   <script type="text/javascript">
+    'use strict';
     var canvas1 = document.getElementById("canvas1");
     var canvas2 = document.getElementById("canvas2");
+    var renameFrom = document.getElementById("renameFrom");
+    var renameTo   = document.getElementById("renameTo");
   </script>
   <script type="text/javascript" src="spline_interpolate.js"></script>
   <script type="text/javascript" src="util.js"></script>
