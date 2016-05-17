@@ -9,11 +9,13 @@
           style="background-color: #eee"
           >
   </canvas>
+  <input type="button" id="pinButton" value="Pin the selected points" onclick="onPin()"><br>
   Rename <input type="text" id="renameFrom"> to <input type="text" id="renameTo"> <input type="button" value="Rename" onclick="onRename()">
 
   <script type="text/javascript">
     'use strict';
     var canvas     = document.getElementById("canvas");
+    var pinButton  = document.getElementById("pinButton");
     var renameFrom = document.getElementById("renameFrom");
     var renameTo   = document.getElementById("renameTo");
   </script>

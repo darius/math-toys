@@ -261,8 +261,9 @@ function makeSheetUI(quiver, canvas, options, controls) {
     }
 
     function showArrow(arrow) {
-        sheet.ctx.fillStyle = arrow.op.color;
+        sheet.ctx.fillStyle = (arrow.pinned ? 'black' : arrow.op.color);
         sheet.drawDot(arrow.at, dotRadius);
+        sheet.ctx.fillStyle = 'black';
         sheet.drawText(arrow.at, arrow.label, arrow.op.labelOffset);
     }
 
@@ -274,9 +275,9 @@ function makeSheetUI(quiver, canvas, options, controls) {
         return cnum.distance(at, arrow.at) <= minSelectionD;
     }
 
-    const zeroArrow = quiver.add({op: constantOp, at: cnum.zero});
-    const oneArrow  = quiver.add({op: constantOp, at: cnum.one});
-    quiver.add({op: constantOp, at: cnum.neg(cnum.one)});
+    const zeroArrow = quiver.add(makeConstant(cnum.zero));
+    const oneArrow  = quiver.add(makeConstant(cnum.one));
+    quiver.add(makeConstant(cnum.neg(cnum.one)));
 
     const emptyHand = {
         moveFromStart: noOp,
@@ -301,6 +302,12 @@ function makeSheetUI(quiver, canvas, options, controls) {
         assert(0 <= selection.length && selection.length <= 1);
         if (arrow !== selection[0]) selection.splice(0, 1, arrow);
         else                        selection.splice(0, 1);
+    }
+
+    function pinSelection() {
+        selection.forEach(arrow => {
+            if (arrow.op !== constantOp) arrow.pinned = !arrow.pinned;
+        })
     }
 
     function perform(op, at) {
@@ -376,10 +383,15 @@ function makeSheetUI(quiver, canvas, options, controls) {
     });
 
     return {
+        pinSelection,
         sheet,
         show,
         toggleSelection,
     };
+}
+
+function makeConstant(value) {
+    return {op: constantOp, at: value};
 }
 
 function addPointerListener(canvas, listener) {
@@ -419,7 +431,7 @@ function addPointerListener(canvas, listener) {
 }
 
 const constantOp = {
-    color: 'blue',
+    color: 'black',
     labelOffset: {x: -12, y: 6},
     label: arrow => {
         const z = arrow.at;
@@ -438,7 +450,7 @@ function fmtImag(im) {
 }
 
 const variableOp = {
-    color: 'black',
+    color: 'green',
     labelOffset: {x: 6, y: -14},
     label: (arrow, quiver) => String.fromCharCode(97 + quiver.getFreeArrows().length),
     recompute: noOp,
@@ -607,7 +619,7 @@ function drawStreamline(sheet, z, f, vectorScale) {
         ctx.lineWidth = (nsteps-i) * 0.25;
         const dz = cnum.rmul(vectorScale/nsteps, f(z));
         if (1 && scale*0.03 < cnum.magnitude(dz)) {
-            // We going too far and might end up with random-looking
+            // We're going too far and might end up with random-looking
             // sharp-angled paths. Stop and let this streamline get
             // approximately filled in from some other starting point.
             break;

@@ -69,8 +69,8 @@ function update() {
     requestAnimationFrame(doUpdates);
 }
 
-function isPending(p) {
-    return pendingUpdates.some(q => q[0] === p[0]);
+function isPending([arrow, _]) {
+    return pendingUpdates.some(([pendingArrow, _]) => arrow === pendingArrow);
 }
 
 function complement(predicate) {
@@ -79,19 +79,19 @@ function complement(predicate) {
 
 function doUpdates() {
     if (0 < pendingUpdates.length) {
+        const startTime = Date.now();
         doUpdate(pendingUpdates[0]);
         pendingUpdates.splice(0, 1);
         requestAnimationFrame(doUpdates);
+        console.log(Date.now() - startTime);
     }
 }
 
-function doUpdate(pair) {
+function doUpdate([arrow, sheet]) {
     const savedAt = zVar.at;
     watching = false;
 //    console.log('doUpdate', pair[0].label);
 
-    const arrow = pair[0];
-    const sheet = pair[1];
     sheet.clear();
     sheet.drawGrid();
     sheet.ctx.strokeStyle = 'black';

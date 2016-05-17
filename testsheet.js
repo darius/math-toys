@@ -11,6 +11,10 @@ function onLoad() {
     ui.show();
 }
 
+function onPin() {
+    ui.pinSelection();
+}
+
 function onRename() {
     const arrow = quiver.findLabel(renameFrom.value);
     const newLabel = renameTo.value.trim();
