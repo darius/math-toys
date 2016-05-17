@@ -80,32 +80,23 @@ function complement(predicate) {
 function doUpdates() {
     if (0 < pendingUpdates.length) {
         const startTime = Date.now();
-        doUpdate(pendingUpdates[0]);
+        const pair = pendingUpdates[0];
+        doUpdate(pair);
         pendingUpdates.splice(0, 1);
         requestAnimationFrame(doUpdates);
-        console.log(Date.now() - startTime);
+        console.log(Date.now() - startTime, pair[0].label);
     }
 }
 
 function doUpdate([arrow, sheet]) {
     const savedAt = zVar.at;
+    const f = quiver.asFunction(zVar, arrow);
     watching = false;
 //    console.log('doUpdate', pair[0].label);
 
     sheet.clear();
     sheet.drawGrid();
     sheet.ctx.strokeStyle = 'black';
-    let f;
-    if (arrow.op === sh.variableOp) {
-        const c = arrow.at;
-        f = z => c;
-    } else {
-        f = z => {
-            zVar.at = z;
-            quiver.onMove();
-            return arrow.at;
-        }
-    }
     sh.drawVectorField(sheet, f, 0.05, 15);
 
     zVar.at = savedAt;     // XXX ugh hack

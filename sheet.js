@@ -53,6 +53,21 @@ function makeQuiver() {
         watchers.push(watcher);
     }
 
+    // This assumes the arrows are from this quiver.
+    function asFunction(inputArrow, outputArrow) {
+        if (outputArrow.op === variableOp) {
+            const c = outputArrow.at;
+            return z => c;
+        } else {
+            return z => {
+                inputArrow.at = z;
+                onMove();
+                return outputArrow.at;
+            }
+        }
+
+    }
+
     function onMove() {
         arrows.forEach(recompute);
         notify({tag: 'move'});
@@ -69,6 +84,7 @@ function makeQuiver() {
     const quiver = {
         add,
         addWatcher,
+        asFunction,
         findLabel,
         isEmpty,
         getArrows,
