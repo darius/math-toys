@@ -23,7 +23,6 @@ function onLoad() {
     quiver.addWatcher(onChange);
 
     function onChange(event) {
-        if (!watching) return;
         if (event.tag === 'add') {
             addSheet(event.arrow);
         } else {
@@ -31,8 +30,6 @@ function onLoad() {
         }
     }
 }
-
-let watching = true;
 
 function onRename() {
     const arrow = quiver.findLabel(renameFrom.value);
@@ -91,7 +88,6 @@ function doUpdates() {
 function doUpdate([arrow, sheet]) {
     const savedAt = zVar.at;
     const f = quiver.asFunction(zVar, arrow);
-    watching = false;
 //    console.log('doUpdate', pair[0].label);
 
     sheet.clear();
@@ -100,6 +96,5 @@ function doUpdate([arrow, sheet]) {
     sh.drawVectorField(sheet, f, 0.05, 15);
 
     zVar.at = savedAt;     // XXX ugh hack
-    quiver.onMove();
-    watching = true;
+    f(zVar.at); // hack cont'd, to restore all the other arrow values
 }

@@ -61,7 +61,7 @@ function makeQuiver() {
         } else {
             return z => {
                 inputArrow.at = z;
-                onMove();
+                arrows.forEach(recompute);
                 return outputArrow.at;
             }
         }
