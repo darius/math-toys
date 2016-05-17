@@ -55,7 +55,7 @@ function makeQuiver() {
 
     // This assumes the arrows are from this quiver.
     function asFunction(inputArrow, outputArrow) {
-        if (outputArrow.op === variableOp) {
+        if (outputArrow.op === variableOp && inputArrow !== outputArrow) {
             const c = outputArrow.at;
             return z => c;
         } else {
