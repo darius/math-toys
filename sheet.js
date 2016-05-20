@@ -55,17 +55,43 @@ function makeQuiver() {
 
     // This assumes the arrows are from this quiver.
     function asFunction(inputArrow, outputArrow) {
-        if (outputArrow.op === variableOp && inputArrow !== outputArrow) {
-            const c = outputArrow.at;
-            return z => c;
-        } else {
-            return z => {
-                inputArrow.at = z;
-                arrows.forEach(recompute);
-                return outputArrow.at;
+        assert(inputArrow.op === constantOp || inputArrow.op === variableOp);
+        const lines = [];
+        for (let i = 0; ; ++i) {
+            assert(i < arrows.length);
+            const arrow = arrows[i];
+
+            let re, im;
+            if (arrow === inputArrow) {
+                re = 'z.re';
+                im = 'z.im';
+            } else if (arrow.op === addOp) {
+                const u = arrow.arg1._compiledAs;
+                const v = arrow.arg2._compiledAs;
+                re = 'r'+u+' + r'+v;
+                im = 'i'+u+' + i'+v;
+            } else if (arrow.op === mulOp) {
+                const u = arrow.arg1._compiledAs;
+                const v = arrow.arg2._compiledAs;
+                re = 'r'+u+'*r'+v+' - i'+u+'*i'+v;
+                im = 'i'+u+'*r'+v+' + r'+u+'*i'+v;
+            } else {
+                assert(arrow.op === constantOp || arrow.op === variableOp);
+                re = '' + arrow.at.re; // XXX full precision?
+                im = '' + arrow.at.im;
+            }
+            const L = lines.length;
+            arrow._compiledAs = L;
+            lines.push('const r'+L+' = '+re+', i'+L+' = '+im+';')
+
+            if (arrows[i] === outputArrow) {
+                lines.push('return {re: r'+L+', im: i'+L+'};');
+                break;
             }
         }
-
+        const sourceCode = 'z => {' + lines.join('\n') + '}';
+//        console.log(sourceCode);
+        return (0,eval)(sourceCode);
     }
 
     function onMove() {
@@ -614,10 +640,18 @@ function computeSpiralArc(u, v, uv) {
 function drawVectorField(sheet, f, vectorScale, spacing) {
     const ctx = sheet.ctx;
     ctx.save();
+    ctx.fillStyle = 'red';
     ctx.strokeStyle = 'black';
-    ctx.globalAlpha = 0.25;
+    ctx.lineWidth = 1;
     const height = sheet.canvas.height;
     const width  = sheet.canvas.width;
+    for (let y = 0; y < height; y += spacing) {
+        for (let x = 0; x < width; x += spacing) {
+            const z = sheet.pointFromXY({x: x, y: y});
+            sheet.drawDot(z, 1);
+        }
+    }
+    ctx.globalAlpha = 0.5;
     for (let y = 0; y < height; y += spacing) {
         for (let x = 0; x < width; x += spacing) {
             const z = sheet.pointFromXY({x: x, y: y});
@@ -631,8 +665,8 @@ function drawStreamline(sheet, z, f, vectorScale) {
     const ctx = sheet.ctx;
     const scale = sheet.scale;
     const nsteps = 10;
+    ctx.beginPath();
     for (let i = 0; i < nsteps; ++i) {
-        ctx.lineWidth = (nsteps-i) * 0.25;
         const dz = cnum.rmul(vectorScale/nsteps, f(z));
         if (1 && scale*0.03 < cnum.magnitude(dz)) {
             // We're going too far and might end up with random-looking
@@ -642,13 +676,12 @@ function drawStreamline(sheet, z, f, vectorScale) {
         }
         const z1 = cnum.add(z, dz);
 
-        ctx.beginPath();
         ctx.moveTo(scale*z.re, scale*z.im);
         ctx.lineTo(scale*z1.re, scale*z1.im);
-        ctx.stroke();
 
         z = z1;
     }
+    ctx.stroke();
 }
 
 exports.mathtoys.sheet = {
