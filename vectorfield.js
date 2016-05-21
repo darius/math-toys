@@ -86,15 +86,9 @@ function doUpdates() {
 }
 
 function doUpdate([arrow, sheet]) {
-    const savedAt = zVar.at;
     const f = quiver.asFunction(zVar, arrow);
-//    console.log('doUpdate', pair[0].label);
-
     sheet.clear();
     sheet.drawGrid();
     sheet.ctx.strokeStyle = 'black';
     sh.drawVectorField(sheet, f, 0.05, 15);
-
-    zVar.at = savedAt;     // XXX ugh hack
-    f(zVar.at); // hack cont'd, to restore all the other arrow values
 }
