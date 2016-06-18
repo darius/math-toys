@@ -64,7 +64,7 @@ function drawSpline(ctx, pts, t, closed){
         for (let i = 0; i < n; i += 2){
             pushControlPoints(cp, pts[i], pts[i+1], pts[i+2], pts[i+3], pts[i+4], pts[i+5], t);
         }
-        cp = cp.concat(cp[0], cp[1]);   
+        cp = cp.concat(cp[0], cp[1]);   // XXX wouldn't a couple of .push calls be faster?
         for (let i = 2; i < n+2; i += 2){
             ctx.beginPath();
             ctx.moveTo(pts[i], pts[i+1]);

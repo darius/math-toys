@@ -652,8 +652,8 @@ function drawVectorField(sheet, f, vectorScale, spacing) {
         }
     }
     ctx.globalAlpha = 0.5;
-    for (let y = 0; y < height; y += spacing) {
-        for (let x = 0; x < width; x += spacing) {
+    for (let y = 0; y <= height; y += spacing) {
+        for (let x = 0; x <= width; x += spacing) {
             const z = sheet.pointFromXY({x: x, y: y});
             drawStreamline(sheet, z, f, vectorScale);
         }
