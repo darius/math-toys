@@ -56,16 +56,16 @@ function drawSpline(ctx, pts, t, closed){
     const cp = [];   // array of control points, as x0,y0,x1,y1,...
     const n = pts.length;
 
-    if (closed){
+    if (closed) {
         //   Append and prepend knots and control points to close the curve
         pts.push(pts[0], pts[1], pts[2], pts[3]);
         pts.unshift(pts[n-1]);
         pts.unshift(pts[n-1]);
-        for (let i = 0; i < n; i += 2){
+        for (let i = 0; i < n; i += 2) {
             pushControlPoints(cp, pts[i], pts[i+1], pts[i+2], pts[i+3], pts[i+4], pts[i+5], t);
         }
-        cp = cp.concat(cp[0], cp[1]);   // XXX wouldn't a couple of .push calls be faster?
-        for (let i = 2; i < n+2; i += 2){
+        cp.push(cp[0], cp[1]);   // XXX untested modification
+        for (let i = 2; i < n+2; i += 2) {
             ctx.beginPath();
             ctx.moveTo(pts[i], pts[i+1]);
             ctx.bezierCurveTo(cp[2*i-2], cp[2*i-1], cp[2*i], cp[2*i+1], pts[i+2], pts[i+3]);
