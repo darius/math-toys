@@ -618,13 +618,24 @@ function parenthesize(name) {
 // similar to one from 1 to v.
 function computeSpiralArc(u, v, uv) {
     // Multiples of v^(1/8) as points on the spiral from 1 to v.
-    const h4 = cnum.roughSqrt(v);
+    const h8 = cnum.roughSqrt(v);
+    const h4 = cnum.roughSqrt(h8);
     const h2 = cnum.roughSqrt(h4);
     const h1 = cnum.roughSqrt(h2);
+
     const h3 = cnum.mul(h2, h1);
+
     const h5 = cnum.mul(h4, h1);
     const h6 = cnum.mul(h4, h2);
     const h7 = cnum.mul(h4, h3);
+
+    const h9  = cnum.mul(h8, h1);
+    const h10 = cnum.mul(h8, h2);
+    const h11 = cnum.mul(h8, h3);
+    const h12 = cnum.mul(h8, h4);
+    const h13 = cnum.mul(h8, h5);
+    const h14 = cnum.mul(h8, h6);
+    const h15 = cnum.mul(h8, h7);
 
     return [u,
             cnum.mul(u, h1),
@@ -634,6 +645,14 @@ function computeSpiralArc(u, v, uv) {
             cnum.mul(u, h5),
             cnum.mul(u, h6),
             cnum.mul(u, h7),
+            cnum.mul(u, h8),
+            cnum.mul(u, h9),
+            cnum.mul(u, h10),
+            cnum.mul(u, h11),
+            cnum.mul(u, h12),
+            cnum.mul(u, h13),
+            cnum.mul(u, h14),
+            cnum.mul(u, h15),
             uv];
 }
 
