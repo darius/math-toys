@@ -8,6 +8,7 @@
 const cnum = mathtoys.complex;
 const pointing = mathtoys.pointing;
 const drawSpline = mathtoys.spline_interpolate.drawSpline;
+const descent = mathtoys.descent;
 
 const maxClickDistance = 2;
 const minSelectionDistance = 20;
@@ -43,6 +44,7 @@ function makeQuiver() {
 
     function add(arrow) {
         arrow.label = arrow.op.label(arrow, quiver);
+        arrow.wires = arrow.op.makeConstraint(arrow);
         arrows.push(arrow);
         recompute(arrow);
         notify({tag: 'add', arrow: arrow});
@@ -482,6 +484,7 @@ const constantOp = {
         else                 return '' + z.re + '+' + fmtImag(z.im);
     },
     recompute: noOp,
+    makeConstraint: arrow => descent.makeComplexConstant(arrow.at),
     showProvenance: noOp,
 };
 
@@ -496,6 +499,7 @@ const variableOp = {
     labelOffset: {x: 6, y: -14},
     label: (arrow, quiver) => String.fromCharCode(97 + quiver.getFreeArrows().length),
     recompute: noOp,
+    makeConstraint: arrow => descent.makeComplexConstant(arrow.at), // XXX not really constant
     showProvenance: (arrow, sheet) => { // XXX fix the caller
         sheet.drawLine(cnum.zero, arrow.at);
         sheet.drawSpiral(cnum.one, arrow.at, arrow.at);
@@ -580,6 +584,12 @@ const addOp = {
     recompute: arrow => {
         arrow.at = cnum.add(arrow.arg1.at, arrow.arg2.at);
     },
+    makeConstraint: arrow => {
+        const wires = [descent.genvar('+x'),
+                       descent.genvar('+y')];
+        descent.complexAdd(arrow.arg1.wires, arrow.arg2.wires, wires);
+        return wires;
+    },
     showProvenance: (arrow, sheet) => {
         sheet.drawLine(arrow.arg1.at, arrow.at);
     },
@@ -597,6 +607,12 @@ const mulOp = {
     },
     recompute: arrow => {
         arrow.at = cnum.mul(arrow.arg1.at, arrow.arg2.at);
+    },
+    makeConstraint: arrow => {
+        const wires = [descent.genvar('*x'),
+                       descent.genvar('*y')];
+        descent.complexMul(arrow.arg1.wires, arrow.arg2.wires, wires);
+        return wires;
     },
     showProvenance: (arrow, sheet) => {
         sheet.drawSpiral(arrow.arg1.at, arrow.arg2.at, arrow.at);
