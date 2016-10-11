@@ -64,7 +64,7 @@ function relax(nsteps) {
         gradient().forEach((d, i) => {
             wires[i] -= stepSize * d;
         });
-        console.log('step', trial, 'error', totalError());
+        if (0) console.log('step', trial, 'error', totalError());
     }
 }
 

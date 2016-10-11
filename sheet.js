@@ -97,6 +97,13 @@ function makeQuiver() {
     }
 
     function onMove() {
+        arrows.forEach(arrow => {
+            descent.wires[arrow.wires[0]] = arrow.at.re;
+            descent.wires[arrow.wires[1]] = arrow.at.im;
+        });
+//        satisfy(100);
+        console.log('error', descent.totalError());
+
         arrows.forEach(recompute);
         notify({tag: 'move'});
     }
@@ -109,6 +116,10 @@ function makeQuiver() {
         arrow.op.recompute(arrow);
     }
 
+    function satisfy(nsteps) {
+        descent.relax(nsteps);
+    }
+
     const quiver = {
         add,
         addWatcher,
@@ -118,6 +129,7 @@ function makeQuiver() {
         getArrows,
         getFreeArrows,
         onMove,
+        satisfy,
     };
     return quiver;
 }
@@ -159,6 +171,15 @@ function makeSheet(canvas, options) {
         ctx.beginPath();
         ctx.arc(scale * at.re, scale * at.im, radius, 0, tau);
         ctx.fill();
+    }
+
+    function drawCross(at) {
+        ctx.beginPath();
+        ctx.moveTo(scale * at.re - 9, scale * at.im);
+        ctx.lineTo(scale * at.re + 9, scale * at.im);
+        ctx.moveTo(scale * at.re, scale * at.im - 9);
+        ctx.lineTo(scale * at.re, scale * at.im + 9);
+        ctx.stroke();
     }
 
     function drawLine(at1, at2) {
@@ -246,6 +267,7 @@ function makeSheet(canvas, options) {
         canvas,
         clear,
         ctx,
+        drawCross,
         drawDot,
         drawGrid,
         drawLine,
@@ -272,6 +294,31 @@ function makeSheetUI(quiver, canvas, options, controls) {
     const maxClickD     = maxClickDistance / sheet.scale;
 
     const selection = [];
+
+    let dirty = false;
+
+    function heyImDirty() {
+        if (!dirty) {
+            dirty = true;
+            requestAnimationFrame(redisplay);
+        }
+    }
+
+    function redisplay() {
+        if (dirty) {
+            show();
+            dirty = false;
+            const e = descent.totalError();
+            if (e <= 0.1) {
+                console.log('not again');
+            } else {
+                console.log('again', e);
+                requestAnimationFrame(redisplay);
+                quiver.satisfy(100);
+                dirty = true;
+            }
+        }
+    }
 
     function show() {
         const ctx = sheet.ctx;
@@ -307,6 +354,8 @@ function makeSheetUI(quiver, canvas, options, controls) {
     function showArrow(arrow) {
         sheet.ctx.fillStyle = (arrow.pinned ? 'black' : arrow.op.color);
         sheet.drawDot(arrow.at, dotRadius);
+        sheet.drawCross({re: descent.wires[arrow.wires[0]],
+                         im: descent.wires[arrow.wires[1]]});
         sheet.ctx.fillStyle = 'black';
         sheet.drawText(arrow.at, arrow.label, arrow.op.labelOffset);
     }
@@ -403,7 +452,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
             handStartedAt = sheet.pointFromXY(xy);
             strayed = false;
             hand = chooseHand(handStartedAt);
-            show();
+            heyImDirty();
         },
         onMove: xy => {
             if (handStartedAt === undefined) return;
@@ -411,7 +460,8 @@ function makeSheetUI(quiver, canvas, options, controls) {
             strayed = strayed || maxClickD < cnum.distance(handStartedAt, at);
             hand.moveFromStart(cnum.sub(at, handStartedAt));
             hand.onMove();
-            show();
+            console.log('onmove imdirty');
+            heyImDirty();
         },
         onEnd: () => {
             assert(handStartedAt !== undefined);
@@ -421,7 +471,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
                 hand.onEnd();
             }
             hand = emptyHand;
-            show();
+            heyImDirty();
             handStartedAt = undefined;
         },
     });
@@ -429,7 +479,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
     return {
         pinSelection,
         sheet,
-        show,
+        show: heyImDirty,
         toggleSelection,
     };
 }
