@@ -32,11 +32,16 @@ function makeQuiver() {
     }
 
     function getFreeArrows() {
-        return arrows.filter(arrow => arrow.op === variableOp);
+        return arrows.filter(arrow => arrow.op !== constantOp);
+    }
+
+    function nameNextArrow() {
+        const vars = arrows.filter(arrow => arrow.op === variableOp);
+        return String.fromCharCode(97 + vars.length);
     }
 
     function findLabel(label) {
-        for (let arrow of arrows) {
+        for (const arrow of arrows) {
             if (arrow.label === label) return arrow;
         }
         return null;
@@ -96,22 +101,25 @@ function makeQuiver() {
         return (0,eval)(sourceCode);
     }
 
+    // Update me to reflect any changes from dragging an arrow.
     function onMove() {
+        arrows.forEach(recompute);
+        notify({tag: 'move'});
+
         arrows.forEach(arrow => {
             descent.wires[arrow.wires[0]] = arrow.at.re;
             descent.wires[arrow.wires[1]] = arrow.at.im;
         });
 //        satisfy(100);
         console.log('error', descent.totalError());
-
-        arrows.forEach(recompute);
-        notify({tag: 'move'});
     }
 
     function notify(event) {
         watchers.forEach(watch => watch(event));
     }
 
+    // Update arrow's position, if it's a function of other arrows,
+    // as that function of their current position.
     function recompute(arrow) {
         arrow.op.recompute(arrow);
     }
@@ -128,6 +136,7 @@ function makeQuiver() {
         isEmpty,
         getArrows,
         getFreeArrows,
+        nameNextArrow,
         onMove,
         satisfy,
     };
@@ -433,6 +442,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
     function chooseHand(at) {
         const target = pickTarget(at, quiver.getFreeArrows());
         if (target !== null) {
+            console.log('target', target);
             return makeMoverHand(target, quiver);
         } else if (options.adding && isCandidatePick(at, zeroArrow)) {
             return makeAddHand(sheet, selection, perform);
@@ -547,7 +557,7 @@ function fmtImag(im) {
 const variableOp = {
     color: 'green',
     labelOffset: {x: 6, y: -14},
-    label: (arrow, quiver) => String.fromCharCode(97 + quiver.getFreeArrows().length),
+    label: (arrow, quiver) => quiver.nameNextArrow(),
     recompute: noOp,
     makeConstraint: arrow => descent.makeComplexConstant(arrow.at), // XXX not really constant
     showProvenance: (arrow, sheet) => { // XXX fix the caller
