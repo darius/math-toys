@@ -47,6 +47,15 @@ function makeQuiver() {
         return null;
     }
 
+    function pinVariables(pinOn) {
+        for (const arrow of arrows) {
+            if (arrow.op === variableOp) {
+                descent.pins[arrow.wires[0]] = pinOn;
+                descent.pins[arrow.wires[1]] = pinOn;
+            }
+        }
+    }
+
     function add(arrow) {
         arrow.label = arrow.op.label(arrow, quiver);
         arrow.wires = arrow.op.makeConstraint(arrow);
@@ -144,6 +153,7 @@ function makeQuiver() {
         getFreeArrows,
         nameNextArrow,
         onMove,
+        pinVariables,
         satisfy,
     };
     return quiver;
@@ -567,19 +577,28 @@ const variableOp = {
 
 function makeMoverHand(arrow, quiver) {
     const startAt = arrow.at;
+    const movingAVariable = arrow.op === variableOp;
+    if (movingAVariable) {
+        quiver.pinVariables(true);
+    } else {
+        descent.pins[arrow.wires[0]] = true;
+        descent.pins[arrow.wires[1]] = true;
+    }
     function moveFromStart(offset) {
         arrow.at = cnum.add(startAt, offset);
         descent.wires[arrow.wires[0]] = arrow.at.re;
         descent.wires[arrow.wires[1]] = arrow.at.im;
-        descent.pins[arrow.wires[0]] = true;
-        descent.pins[arrow.wires[1]] = true;
     }
     function onMove() {
         quiver.onMove();
     }
     function onEnd() {
-        descent.pins[arrow.wires[0]] = false;
-        descent.pins[arrow.wires[1]] = false;
+        if (movingAVariable) {
+            quiver.pinVariables(false);
+        } else {
+            descent.pins[arrow.wires[0]] = false;
+            descent.pins[arrow.wires[1]] = false;
+        }
     }
     return {
         moveFromStart,

@@ -14,15 +14,15 @@ const pins  = []; // if pins[i], then treat wires[i] as 'constant' for now
 
 const constraints = [];
 
-function makeRealRef(name) {
+function makeRealRef(name, value=0) {
     const i = names.indexOf(name);
-    return 0 <= i ? i : makeRealVariable(name);
+    return 0 <= i ? i : makeRealVariable(name, value);
 }
 
-function makeRealVariable(name) {
+function makeRealVariable(name, value=0) {
     const result = names.length;
     names.push(name);
-    wires.push(0);
+    wires.push(value);
     pins.push(false);
     return result;
 }
