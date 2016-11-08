@@ -10,6 +10,7 @@
 
 const names = [];
 const wires = [];
+const pins  = []; // if pins[i], then treat wires[i] as 'constant' for now
 
 const constraints = [];
 
@@ -22,6 +23,7 @@ function makeRealVariable(name) {
     const result = names.length;
     names.push(name);
     wires.push(0);
+    pins.push(false);
     return result;
 }
 
@@ -38,6 +40,7 @@ function makeRealConstant(value) {
     const result = names.length;
     names.push('');
     wires.push(value);
+    pins.push(true);
     constants.set(value, result);
     return result;    
 }
@@ -62,7 +65,7 @@ let stepSize = 0.01;
 function relax(nsteps) {
     for (let trial = 0; trial < nsteps; ++trial) {
         gradient().forEach((d, i) => {
-            wires[i] -= stepSize * d;
+            if (!pins[i]) wires[i] -= stepSize * d;
         });
         if (0) console.log('step', trial, 'error', totalError());
     }
@@ -119,9 +122,6 @@ function gradient() {
             throw new Error('XXX');
         }
     }
-    names.forEach((name, i) => {
-        if (name === '') pd[i] = 0;
-    });
     return pd;
 }
 
@@ -164,6 +164,7 @@ function complexMul([a_re, a_im], [b_re, b_im], [v_re, v_im]) {
 exports.mathtoys.descent = {
     names,
     wires,
+    pins,
     constraints,
 
     makeRealConstant,

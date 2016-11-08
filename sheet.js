@@ -103,6 +103,7 @@ function makeQuiver() {
 
     // Update me to reflect any changes from dragging an arrow.
     function onMove() {
+        if (0) {
         arrows.forEach(recompute);
         notify({tag: 'move'});
 
@@ -110,8 +111,9 @@ function makeQuiver() {
             descent.wires[arrow.wires[0]] = arrow.at.re;
             descent.wires[arrow.wires[1]] = arrow.at.im;
         });
+        }
 //        satisfy(100);
-        console.log('error', descent.totalError());
+//        console.log('error', descent.totalError());
     }
 
     function notify(event) {
@@ -126,6 +128,10 @@ function makeQuiver() {
 
     function satisfy(nsteps) {
         descent.relax(nsteps);
+        if (1) arrows.forEach(arrow => {
+            arrow.at.re = descent.wires[arrow.wires[0]];
+            arrow.at.im = descent.wires[arrow.wires[1]];
+        });
     }
 
     const quiver = {
@@ -319,9 +325,9 @@ function makeSheetUI(quiver, canvas, options, controls) {
             dirty = false;
             const e = descent.totalError();
             if (e <= 0.0001) {
-                console.log('not again');
+//                console.log('not again');
             } else {
-                console.log('again', e);
+//                console.log('again', e);
                 requestAnimationFrame(redisplay);
                 quiver.satisfy(100);
                 dirty = true;
@@ -368,6 +374,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
         sheet.ctx.fillStyle = 'black';
         sheet.drawText(arrow.at, arrow.label, arrow.op.labelOffset);
     }
+
 
     function onStateChange() {
     }
@@ -459,6 +466,10 @@ function makeSheetUI(quiver, canvas, options, controls) {
 
     addPointerListener(canvas, {
         onStart: xy => {
+            if (hand !== emptyHand) {
+                console.log("somehow we have a hand still");
+                hand.onEnd();
+            }
             handStartedAt = sheet.pointFromXY(xy);
             strayed = false;
             hand = chooseHand(handStartedAt);
@@ -470,15 +481,15 @@ function makeSheetUI(quiver, canvas, options, controls) {
             strayed = strayed || maxClickD < cnum.distance(handStartedAt, at);
             hand.moveFromStart(cnum.sub(at, handStartedAt));
             hand.onMove();
-            console.log('onmove imdirty');
+//            console.log('onmove imdirty');
             heyImDirty();
         },
         onEnd: () => {
+//            console.log('LISTENER ONEND');
             assert(handStartedAt !== undefined);
+            hand.onEnd();
             if (!strayed) {
                 onClick(handStartedAt); // XXX or take from where it ends?
-            } else {
-                hand.onEnd();
             }
             hand = emptyHand;
             heyImDirty();
@@ -529,6 +540,7 @@ function addPointerListener(canvas, listener) {
     canvas.addEventListener('mousedown', pointing.leftButtonOnly(pointing.mouseHandler(canvas, listener.onStart)));
     canvas.addEventListener('mousemove', pointing.mouseHandler(canvas, listener.onMove));
     canvas.addEventListener('mouseup',   pointing.mouseHandler(canvas, coords => {
+//        console.log('HEEEYYYY MOUSEUP');
         listener.onMove(coords);
         listener.onEnd();
     }));
@@ -570,14 +582,23 @@ function makeMoverHand(arrow, quiver) {
     const startAt = arrow.at;
     function moveFromStart(offset) {
         arrow.at = cnum.add(startAt, offset);
+        descent.wires[arrow.wires[0]] = arrow.at.re;
+        descent.wires[arrow.wires[1]] = arrow.at.im;
+        descent.pins[arrow.wires[0]] = true;
+        descent.pins[arrow.wires[1]] = true;
     }
     function onMove() {
         quiver.onMove();
     }
+    function onEnd() {
+        console.log("HEY********* onEnd");
+        descent.pins[arrow.wires[0]] = false;
+        descent.pins[arrow.wires[1]] = false;
+    }
     return {
         moveFromStart,
         onMove,
-        onEnd: onMove,     // TODO: add to the undo stack
+        onEnd,     // TODO: add to the undo stack
         dragGrid: noOp,
         show: noOp,
     };
