@@ -309,7 +309,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
             show();
             dirty = false;
             const e = descent.totalError();
-            if (e <= 0.1) {
+            if (e <= 0.0001) {
                 console.log('not again');
             } else {
                 console.log('again', e);
