@@ -367,7 +367,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
     }
 
     function showArrow(arrow) {
-        sheet.ctx.fillStyle = (arrow.pinned ? 'black' : arrow.op.color);
+        sheet.ctx.fillStyle = (arrow.pinned ? 'black' : arrow.op.color); // XXX look at descent.pins[] instead
         sheet.drawDot(arrow.at, dotRadius);
         sheet.ctx.fillStyle = 'black';
         sheet.drawText(arrow.at, arrow.label, arrow.op.labelOffset);
@@ -412,7 +412,10 @@ function makeSheetUI(quiver, canvas, options, controls) {
 
     function pinSelection() {
         selection.forEach(arrow => {
-            if (arrow.op !== constantOp) arrow.pinned = !arrow.pinned;
+            if (arrow.op !== constantOp) {
+                descent.pins[arrow.wires[0]] = !descent.pins[arrow.wires[0]];
+                descent.pins[arrow.wires[1]] = !descent.pins[arrow.wires[1]];
+            }
         })
     }
 
