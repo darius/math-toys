@@ -103,9 +103,9 @@ function makeQuiver() {
 
     // Update me to reflect any changes from dragging an arrow.
     function onMove() {
+        notify({tag: 'move'});
         if (0) {
         arrows.forEach(recompute);
-        notify({tag: 'move'});
 
         arrows.forEach(arrow => {
             descent.wires[arrow.wires[0]] = arrow.at.re;
