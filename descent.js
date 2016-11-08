@@ -150,7 +150,7 @@ function genvar(stem) {
 }
 
 function complexMul([a_re, a_im], [b_re, b_im], [v_re, v_im]) {
-    const [x1, x2] = [genvar('x1'), genvar('x2')]
+    const [x1, x2] = [genvar('x1'), genvar('x2')];
     const [y1, y2] = [genvar('y1'), genvar('y2')];
     realMul(a_re, b_re, x1)
     realMul(a_im, b_im, x2)
