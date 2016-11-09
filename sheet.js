@@ -601,7 +601,7 @@ function makeMoverHand(arrow, quiver) {
     return {
         moveFromStart,
         onMove,
-        onEnd,     // TODO: add to the undo stack
+        onEnd,
         dragGrid: noOp,
         show: noOp,
     };
