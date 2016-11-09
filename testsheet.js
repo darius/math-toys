@@ -13,6 +13,7 @@ function onLoad() {
 
 function onPin() {
     ui.pinSelection();
+    ui.show();
 }
 
 function onRename() {
