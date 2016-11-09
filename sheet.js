@@ -109,7 +109,6 @@ function makeQuiver() {
             }
         }
         const sourceCode = 'z => {' + lines.join('\n') + '}';
-//        console.log(sourceCode);
         return (0,eval)(sourceCode);
     }
 
@@ -444,7 +443,6 @@ function makeSheetUI(quiver, canvas, options, controls) {
     function chooseHand(at) {
         const target = pickTarget(at, quiver.getFreeArrows());
         if (target !== null) {
-            console.log('target', target);
             return makeMoverHand(target, quiver);
         } else if (options.adding && isCandidatePick(at, zeroArrow)) {
             return makeAddHand(sheet, selection, perform);
@@ -476,11 +474,9 @@ function makeSheetUI(quiver, canvas, options, controls) {
             strayed = strayed || maxClickD < cnum.distance(handStartedAt, at);
             hand.moveFromStart(cnum.sub(at, handStartedAt));
             hand.onMove();
-//            console.log('onmove imdirty');
             heyImDirty();
         },
         onEnd: () => {
-//            console.log('LISTENER ONEND');
             assert(handStartedAt !== undefined);
             hand.onEnd();
             if (!strayed) {
@@ -537,7 +533,6 @@ function addPointerListener(canvas, listener) {
     canvas.addEventListener('mousedown', pointing.leftButtonOnly(pointing.mouseHandler(canvas, listener.onStart)));
     canvas.addEventListener('mousemove', pointing.mouseHandler(canvas, listener.onMove));
     canvas.addEventListener('mouseup',   pointing.mouseHandler(canvas, coords => {
-//        console.log('HEEEYYYY MOUSEUP');
         listener.onMove(coords);
         listener.onEnd();
     }));
