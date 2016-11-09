@@ -289,6 +289,14 @@ function makeSheet(canvas, options) {
     };
 }
 
+const emptyHand = {
+    moveFromStart: noOp,
+    onMove: noOp,
+    onEnd: () => emptyHand,
+    dragGrid: noOp,
+    show: noOp,
+};
+
 // A sheet UI presents a quiver on a sheet, along with state
 // and controls for seeing and manipulating the quiver.
 function makeSheetUI(quiver, canvas, options, controls) {
@@ -379,14 +387,6 @@ function makeSheetUI(quiver, canvas, options, controls) {
     const zeroArrow = quiver.add(makeConstant(cnum.zero));
     const oneArrow  = quiver.add(makeConstant(cnum.one));
     quiver.add(makeConstant(cnum.neg(cnum.one)));
-
-    const emptyHand = {
-        moveFromStart: noOp,
-        onMove: noOp,
-        onEnd: noOp,
-        dragGrid: noOp,
-        show: noOp,
-    };
 
     function onClick(at) {
         const choice = pickTarget(at, quiver.getArrows());
@@ -480,13 +480,10 @@ function makeSheetUI(quiver, canvas, options, controls) {
         },
         onEnd: () => {
             assert(handStartedAt !== undefined);
-            hand.onEnd();
+            hand = hand.onEnd();
             if (!strayed) {
                 onClick(handStartedAt); // XXX or take from where it ends?
             }
-            // TODO here, if appropriate, start an animation quickly snapping
-            //  the old hand back to its starting point.
-            hand = emptyHand;
             heyImDirty();
             handStartedAt = undefined;
         },
@@ -590,6 +587,7 @@ function makeMoverHand(arrow, quiver) {
     function onEnd() {
         quiver.pinVariables(!movingAVariable);
         if (!movingAVariable) quiver.pin(arrow, false);
+        return emptyHand;
     }
     return {
         moveFromStart,
@@ -607,6 +605,7 @@ function makeAddHand(sheet, selection, perform) {
     }
     function onEnd() {
         perform(addOp, adding);
+        return emptyHand;
     }
     return {
         moveFromStart,
@@ -630,6 +629,7 @@ function makeMultiplyHand(sheet, selection, perform) {
     }
     function onEnd() {
         perform(mulOp, multiplying);
+        return emptyHand;
     }
     return {
         moveFromStart,
