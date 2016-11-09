@@ -145,19 +145,19 @@ function complexAdd(a, b, v) {
 
 let gensym_count = 0;
 
-function genvar(stem) {
-    return makeRealRef(stem + ('_' + gensym_count++));
+function genvar(stem, value=0) {
+    return makeRealRef(stem + ('_' + gensym_count++), value);
 }
 
 function complexMul([a_re, a_im], [b_re, b_im], [v_re, v_im]) {
     const [x1, x2] = [genvar('x1'), genvar('x2')];
     const [y1, y2] = [genvar('y1'), genvar('y2')];
-    realMul(a_re, b_re, x1)
-    realMul(a_im, b_im, x2)
-    realAdd(v_re, x2, x1)
-    realMul(a_im, b_re, y1)
-    realMul(a_re, b_im, y2)
-    realAdd(y1, y2, v_im)
+    realMul(a_re, b_re, x1);
+    realMul(a_im, b_im, x2);
+    realAdd(v_re, x2, x1);
+    realMul(a_im, b_re, y1);
+    realMul(a_re, b_im, y2);
+    realAdd(y1, y2, v_im);
 }
 
 

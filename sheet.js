@@ -427,6 +427,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
                 selection[i] = quiver.add({op: op, arg1: argument, arg2: target});
             });
             assert(0 <= selection.length && selection.length <= 1);
+            quiver.pinVariables(true); // TODO pin *everything* old
             onStateChange();
         }
     }
@@ -491,6 +492,8 @@ function makeSheetUI(quiver, canvas, options, controls) {
             if (!strayed) {
                 onClick(handStartedAt); // XXX or take from where it ends?
             }
+            // TODO here, if appropriate, start an animation quickly snapping
+            //  the old hand back to its starting point.
             hand = emptyHand;
             heyImDirty();
             handStartedAt = undefined;
@@ -698,8 +701,8 @@ const mulOp = {
         arrow.at = cnum.mul(arrow.arg1.at, arrow.arg2.at);
     },
     makeConstraint: arrow => {
-        const wires = [descent.genvar('*x'),
-                       descent.genvar('*y')];
+        const wires = [descent.genvar('*x', arrow.arg1.at.re),
+                       descent.genvar('*y', arrow.arg1.at.im)];
         descent.complexMul(arrow.arg1.wires, arrow.arg2.wires, wires);
         return wires;
     },
