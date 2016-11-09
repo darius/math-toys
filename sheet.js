@@ -49,16 +49,19 @@ function makeQuiver() {
 
     function pinVariables(pinOn) {
         for (const arrow of arrows) {
-            if (arrow.op === variableOp) {
-                descent.pins[arrow.wires[0]] = pinOn;
-                descent.pins[arrow.wires[1]] = pinOn;
-            }
+            if (arrow.op === variableOp) pin(arrow, pinOn);
         }
+    }
+
+    function pin(arrow, pinOn) {
+        descent.pins[arrow.wires[0]] = pinOn;
+        descent.pins[arrow.wires[1]] = pinOn;
     }
 
     function add(arrow) {
         arrow.label = arrow.op.label(arrow, quiver);
         arrow.wires = arrow.op.makeConstraint(arrow);
+        arrow.pinned = false; // TODO: simpler to make true for constantOp?
         arrows.push(arrow);
         recompute(arrow);
         notify({tag: 'add', arrow: arrow});
@@ -113,16 +116,6 @@ function makeQuiver() {
     // Update me to reflect any changes from dragging an arrow.
     function onMove() {
         notify({tag: 'move'});
-        if (0) {
-        arrows.forEach(recompute);
-
-        arrows.forEach(arrow => {
-            descent.wires[arrow.wires[0]] = arrow.at.re;
-            descent.wires[arrow.wires[1]] = arrow.at.im;
-        });
-        }
-//        satisfy(100);
-//        console.log('error', descent.totalError());
     }
 
     function notify(event) {
@@ -137,7 +130,7 @@ function makeQuiver() {
 
     function satisfy(nsteps) {
         descent.relax(nsteps);
-        if (1) arrows.forEach(arrow => {
+        arrows.forEach(arrow => {
             arrow.at.re = descent.wires[arrow.wires[0]];
             arrow.at.im = descent.wires[arrow.wires[1]];
         });
@@ -153,6 +146,7 @@ function makeQuiver() {
         getFreeArrows,
         nameNextArrow,
         onMove,
+        pin,
         pinVariables,
         satisfy,
     };
@@ -413,10 +407,10 @@ function makeSheetUI(quiver, canvas, options, controls) {
     function pinSelection() {
         selection.forEach(arrow => {
             if (arrow.op !== constantOp) {
-                descent.pins[arrow.wires[0]] = !descent.pins[arrow.wires[0]];
-                descent.pins[arrow.wires[1]] = !descent.pins[arrow.wires[1]];
+                arrow.pinned = !arrow.pinned;
+                quiver.pin(arrow, arrow.pinned);
             }
-        })
+        });
     }
 
     function perform(op, at) {
@@ -587,8 +581,8 @@ function makeMoverHand(arrow, quiver) {
     if (movingAVariable) {
         quiver.pinVariables(true);
     } else {
-        descent.pins[arrow.wires[0]] = true;
-        descent.pins[arrow.wires[1]] = true;
+//        quiver.pinVariables(false);
+        quiver.pin(arrow, true);
     }
     function moveFromStart(offset) {
         arrow.at = cnum.add(startAt, offset);
@@ -601,10 +595,8 @@ function makeMoverHand(arrow, quiver) {
     function onEnd() {
         if (movingAVariable) {
             quiver.pinVariables(false);
-        } else {
-            descent.pins[arrow.wires[0]] = false;
-            descent.pins[arrow.wires[1]] = false;
         }
+        quiver.pin(arrow, arrow.pinned);
     }
     return {
         moveFromStart,
@@ -677,8 +669,9 @@ const addOp = {
         arrow.at = cnum.add(arrow.arg1.at, arrow.arg2.at);
     },
     makeConstraint: arrow => {
-        const wires = [descent.genvar('+x'),
-                       descent.genvar('+y')];
+        const value = cnum.add(arrow.arg1.at, arrow.arg2.at);
+        const wires = [descent.genvar('+x', value.re),
+                       descent.genvar('+y', value.im)];
         descent.complexAdd(arrow.arg1.wires, arrow.arg2.wires, wires);
         return wires;
     },
@@ -701,8 +694,9 @@ const mulOp = {
         arrow.at = cnum.mul(arrow.arg1.at, arrow.arg2.at);
     },
     makeConstraint: arrow => {
-        const wires = [descent.genvar('*x', arrow.arg1.at.re),
-                       descent.genvar('*y', arrow.arg1.at.im)];
+        const value = cnum.mul(arrow.arg1.at, arrow.arg2.at);
+        const wires = [descent.genvar('*x', value.re),
+                       descent.genvar('*y', value.im)];
         descent.complexMul(arrow.arg1.wires, arrow.arg2.wires, wires);
         return wires;
     },
