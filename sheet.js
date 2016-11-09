@@ -49,7 +49,9 @@ function makeQuiver() {
 
     function pinVariables(pinOn) {
         for (const arrow of arrows) {
-            if (arrow.op === variableOp) pin(arrow, pinOn);
+            if (arrow.op === variableOp && !arrow.stayPinned) {
+                pin(arrow, pinOn);
+            }
         }
     }
 
@@ -572,13 +574,11 @@ const variableOp = {
 
 function makeMoverHand(arrow, quiver) {
     const startAt = arrow.at;
+
     const movingAVariable = arrow.op === variableOp;
-    if (movingAVariable) {
-        quiver.pinVariables(true);
-    } else {
-//        quiver.pinVariables(false);
-        quiver.pin(arrow, true);
-    }
+    quiver.pinVariables(movingAVariable);
+    if (!movingAVariable) quiver.pin(arrow, true);
+
     function moveFromStart(offset) {
         arrow.at = cnum.add(startAt, offset);
         descent.wires[arrow.wires[0]] = arrow.at.re;
@@ -588,10 +588,8 @@ function makeMoverHand(arrow, quiver) {
         quiver.onMove();
     }
     function onEnd() {
-        if (movingAVariable) {
-            quiver.pinVariables(false);
-        }
-        quiver.pin(arrow, arrow.stayPinned);
+        quiver.pinVariables(!movingAVariable);
+        if (!movingAVariable) quiver.pin(arrow, false);
     }
     return {
         moveFromStart,
