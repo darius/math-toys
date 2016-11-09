@@ -61,7 +61,7 @@ function makeQuiver() {
     function add(arrow) {
         arrow.label = arrow.op.label(arrow, quiver);
         arrow.wires = arrow.op.makeConstraint(arrow);
-        arrow.pinned = false; // TODO: simpler to make true for constantOp?
+        arrow.stayPinned = false; // TODO: simpler to make true for constantOp?
         arrows.push(arrow);
         recompute(arrow);
         notify({tag: 'add', arrow: arrow});
@@ -361,7 +361,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
     }
 
     function showArrow(arrow) {
-        sheet.ctx.fillStyle = (arrow.pinned ? 'black' : arrow.op.color); // XXX look at descent.pins[] instead
+        sheet.ctx.fillStyle = (arrow.stayPinned ? 'black' : arrow.op.color); // XXX look at descent.pins[] instead
         sheet.drawDot(arrow.at, dotRadius);
         sheet.ctx.fillStyle = 'black';
         sheet.drawText(arrow.at, arrow.label, arrow.op.labelOffset);
@@ -407,8 +407,8 @@ function makeSheetUI(quiver, canvas, options, controls) {
     function pinSelection() {
         selection.forEach(arrow => {
             if (arrow.op !== constantOp) {
-                arrow.pinned = !arrow.pinned;
-                quiver.pin(arrow, arrow.pinned);
+                arrow.stayPinned = !arrow.stayPinned;
+                quiver.pin(arrow, arrow.stayPinned);
             }
         });
     }
@@ -596,7 +596,7 @@ function makeMoverHand(arrow, quiver) {
         if (movingAVariable) {
             quiver.pinVariables(false);
         }
-        quiver.pin(arrow, arrow.pinned);
+        quiver.pin(arrow, arrow.stayPinned);
     }
     return {
         moveFromStart,
