@@ -89,7 +89,7 @@ function makeNumberLine(canvas, yPixels, options) {
     let shift = 0;
     let stretch = 1;
 
-    function show(arrows, selection, shift_, stretch_) {
+    function show(arrows, selection, showText, shift_, stretch_) {
         shift = shift_ === void 0 ? 0 : -shift_; // XXX hacky -
         stretch = stretch_ === void 0 ? 1 : stretch_;
         ctx.save();
@@ -116,7 +116,7 @@ function makeNumberLine(canvas, yPixels, options) {
                 ctx.restore();
             }
             drawDot(arrow.at, dotRadius);
-            drawText(arrow.at, arrow.label);
+            if (showText) drawText(arrow.at, arrow.label);
         }
     }
 
@@ -172,7 +172,6 @@ function makeNumberLine(canvas, yPixels, options) {
     }
 
     function drawText(at, text) {
-        if (options.facing === -1) return; // XXX
         ctx.textBaseline = options.facing === 1 ? 'bottom' : 'top';
         const x = at * scale;
         const y = options.facing === 1 ? -dotRadius - 3 : height + dotRadius + 3;
@@ -217,8 +216,8 @@ function makeNumberLineUI(quiver, canvas, options) {
         onEnd: noOp,
         dragGrid: noOp,
         show: (bot, top, arrows, selection) => {
-            bot.show(arrows, selection);
-            top.show(arrows, selection);
+            bot.show(arrows, selection, false);
+            top.show(arrows, selection, true);
         },
     };
 
@@ -334,8 +333,8 @@ function makeMoverHand(arrow, quiver, ruler) {
         onEnd: onMove,
         dragGrid: noOp,
         show: (bot, top, arrows, selection) => {
-            bot.show(arrows, selection);
-            top.show(arrows, selection);
+            bot.show(arrows, selection, false);
+            top.show(arrows, selection, true);
         },
     };
 }
@@ -354,8 +353,8 @@ function makeAddHand(show, perform) {
         onEnd,
         dragGrid: () => sheet.translate(adding),
         show: (bot, top, arrows, selection) => {
-            bot.show(arrows, selection);
-            top.show(arrows, selection, adding / bot.scale);
+            bot.show(arrows, selection, false);
+            top.show(arrows, selection, true, adding / bot.scale);
             if (adding !== 0) top.drawCursor(adding / bot.scale);
         },
     };
@@ -376,9 +375,9 @@ function makeMultiplyHand(show, perform) {
         dragGrid: () => sheet.translate(multiplying),
         show: (bot, top, arrows, selection) => {
             const stretch = 1 + xOffset / top.scale;
-            bot.show(arrows, selection, 0, stretch);
+            bot.show(arrows, selection, false, 0, stretch);
             bot.drawCursor(stretch);
-            top.show(arrows, selection);
+            top.show(arrows, selection, true);
         },
     };
 }
