@@ -317,7 +317,7 @@ function makeMoverHand(arrow, quiver, ruler) {
     return {
         moveFromStart,
         onMove,
-        onEnd: onMove,     // TODO: add to the undo stack
+        onEnd: onMove,
         dragGrid: noOp,
         show: (bot, top, arrows, selection) => {
             bot.show(arrows, selection);
