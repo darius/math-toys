@@ -633,7 +633,7 @@ function makeMoverHand(arrow, quiver) {
 }
 
 function makeSnapDragBackHand(oldHand, origin, offset) {
-    const nsteps = 4;
+    const nsteps = 5;
     let step = nsteps;
     function dragGrid() {
         // This is crude and side-effecty, but let's start here anyway.
