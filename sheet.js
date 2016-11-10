@@ -575,8 +575,10 @@ const variableOp = {
         return descent.makeComplexConstant(arrow.at); // XXX not really constant
     },
     showProvenance(arrow, sheet) { // XXX fix the caller
-        sheet.drawLine(cnum.zero, arrow.at);
-        sheet.drawSpiral(cnum.one, arrow.at, arrow.at);
+        if (0) {
+            sheet.drawLine(cnum.zero, arrow.at);
+            sheet.drawSpiral(cnum.one, arrow.at, arrow.at);
+        }
     },
 };
 
