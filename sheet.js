@@ -596,9 +596,9 @@ const variableOp = {
 function makeMoverHand(arrow, quiver) {
     const startAt = arrow.at;
 
-    const movingAVariable = arrow.op === variableOp;
-    quiver.pinVariables(movingAVariable);
-    if (!movingAVariable) quiver.pin(arrow, true);
+    const pinEmAll = arrow.op === variableOp;
+    quiver.pinVariables(pinEmAll);
+    if (!pinEmAll) quiver.pin(arrow, true);
 
     function moveFromStart(offset) {
         arrow.at = cnum.add(startAt, offset);
@@ -609,8 +609,8 @@ function makeMoverHand(arrow, quiver) {
         quiver.onMove();
     }
     function onEnd() {
-        quiver.pinVariables(!movingAVariable);
-        if (!movingAVariable) quiver.pin(arrow, false);
+        quiver.pinVariables(!pinEmAll);
+        if (!pinEmAll) quiver.pin(arrow, false);
         return emptyHand;
     }
     return {
