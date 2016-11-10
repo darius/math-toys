@@ -98,8 +98,10 @@ function makeNumberLine(canvas, yPixels, options) {
         ctx.scale(stretch, 1);
         ctx.font = options.font;
         ctx.textAlign = 'center';
+        const activeAt = (shift !== 0 ? 0 :
+                          stretch_ !== void 0 ? 1 : null);
         drawNumberLine();
-        drawTicks();
+        drawTicks(activeAt);
         ctx.font = 'italic ' + options.font;
         arrows.forEach(drawArrow);
         ctx.restore();
@@ -125,7 +127,7 @@ function makeNumberLine(canvas, yPixels, options) {
                      height);
     }
 
-    function drawTicks() {
+    function drawTicks(optActiveAt) {
         ctx.lineWidth = 1;
         ctx.textBaseline = options.facing === 1 ? 'top' : 'bottom';
         const left = Math.floor(options.left + shift);
@@ -135,7 +137,7 @@ function makeNumberLine(canvas, yPixels, options) {
             for (let j = 1; j <= 9; ++j) {
                 drawTick(i + j/10, 10);
             }
-            ctx.fillStyle = 'black';
+            ctx.fillStyle = i === optActiveAt ? 'red' : 'black';
             drawTick(i, 15);
             if (options.labels) drawLabel(i, ''+i);
         }
