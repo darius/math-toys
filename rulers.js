@@ -148,6 +148,17 @@ function makeNumberLine(canvas, yPixels, options) {
         else                      ctx.fillRect(scale * x, height-h, 1, h);
     }
 
+    function drawCursor(x) {
+        ctx.save();
+        ctx.translate(width/2,
+                      canvas.height/2 + yPixels);
+        ctx.fillStyle = 'red';
+        const h = 30;           // XXX depends on higher-level layout
+        if (options.facing === 1) ctx.fillRect(scale * x, -h, 1, h);
+        else                      ctx.fillRect(scale * x, 40, 1, h);
+        ctx.restore();
+    }
+
     function drawLabel(x, label) {
         const dy = options.facing === 1 ? 15 : height-15;
         ctx.fillText(label, scale * x, dy);
@@ -173,6 +184,7 @@ function makeNumberLine(canvas, yPixels, options) {
     }
 
     return {
+        drawCursor,
         scale,
         show,
         valueFromX,
@@ -344,6 +356,7 @@ function makeAddHand(show, perform) {
         show: (bot, top, arrows, selection) => {
             bot.show(arrows, selection);
             top.show(arrows, selection, adding / bot.scale);
+            if (adding !== 0) top.drawCursor(adding / bot.scale);
         },
     };
 }
@@ -364,6 +377,7 @@ function makeMultiplyHand(show, perform) {
         show: (bot, top, arrows, selection) => {
             const stretch = 1 + xOffset / top.scale;
             bot.show(arrows, selection, 0, stretch);
+            bot.drawCursor(stretch);
             top.show(arrows, selection);
         },
     };
