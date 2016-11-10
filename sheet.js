@@ -290,6 +290,7 @@ function makeSheet(canvas, options) {
 }
 
 const emptyHand = {
+    isDirty: () => false,
     moveFromStart: noOp,
     onMove: noOp,
     onEnd: () => emptyHand,
@@ -328,13 +329,17 @@ function makeSheetUI(quiver, canvas, options, controls) {
             dirty = false;
             const e = descent.totalError();
             if (e <= 0.00001) {
-//                console.log('not again');
+                if (hand.isDirty()) {
+                    requestAnimationFrame(redisplay);
+                }
             } else {
-//                console.log('again', e);
                 requestAnimationFrame(redisplay);
                 quiver.satisfy(500);
                 dirty = true;
             }
+        } else if (hand.isDirty()) {
+            show();
+            requestAnimationFrame(redisplay);
         }
     }
 
@@ -590,6 +595,7 @@ function makeMoverHand(arrow, quiver) {
         return emptyHand;
     }
     return {
+        isDirty: () => false,
         moveFromStart,
         onMove,
         onEnd,
@@ -598,6 +604,28 @@ function makeMoverHand(arrow, quiver) {
     };
 }
 
+function makeSnapDragBackHand(oldHand, origin, offset) {
+    const nsteps = 4;
+    let step = nsteps;
+    function dragGrid() {
+        // This is crude and side-effecty, but let's start here anyway.
+        --step;
+        oldHand.moveFromStart(cnum.add(origin, cnum.rmul(step/nsteps, cnum.sub(offset, origin))));
+        oldHand.dragGrid();
+    }
+    return {
+        isDirty: () => 0 < step,
+        moveFromStart: noOp,
+        onMove: noOp,
+        onEnd: () => {
+            return emptyHand;
+        },
+        dragGrid,
+        show: noOp,
+    };
+}
+
+
 function makeAddHand(sheet, selection, perform) {
     let adding = cnum.zero;
     function moveFromStart(offset) {
@@ -605,13 +633,16 @@ function makeAddHand(sheet, selection, perform) {
     }
     function onEnd() {
         perform(addOp, adding);
-        return emptyHand;
+        return makeSnapDragBackHand(me, cnum.zero, adding);
     }
-    return {
+    const me = {
+        isDirty: () => false,
         moveFromStart,
         onMove: noOp,
         onEnd,
-        dragGrid: () => sheet.translate(adding),
+        dragGrid: () => {
+            sheet.translate(adding);
+        },
         show: () => {
             sheet.ctx.strokeStyle = 'magenta';
             sheet.drawLine(cnum.zero, adding);
@@ -620,6 +651,7 @@ function makeAddHand(sheet, selection, perform) {
             });
         }
     };
+    return me;
 }
 
 function makeMultiplyHand(sheet, selection, perform) {
@@ -629,9 +661,10 @@ function makeMultiplyHand(sheet, selection, perform) {
     }
     function onEnd() {
         perform(mulOp, multiplying);
-        return emptyHand;
+        return makeSnapDragBackHand(me, cnum.zero, cnum.sub(multiplying, cnum.one));
     }
-    return {
+    const me = {
+        isDirty: () => false,
         moveFromStart,
         onMove: noOp,
         onEnd,
@@ -646,6 +679,7 @@ function makeMultiplyHand(sheet, selection, perform) {
             });
         }
     };
+    return me;
 }
 
 const addOp = {
