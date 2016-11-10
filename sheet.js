@@ -483,7 +483,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
             hand.onMove();
             heyImDirty();
         },
-        onEnd: () => {
+        onEnd() {
             assert(handStartedAt !== undefined);
             hand = hand.onEnd();
             if (!strayed) {
@@ -545,14 +545,16 @@ function addPointerListener(canvas, listener) {
 const constantOp = {
     color: 'black',
     labelOffset: {x: -12, y: 6},
-    label: arrow => {
+    label(arrow) {
         const z = arrow.at;
         if      (z.im === 0) return '' + z.re;
         else if (z.re === 0) return fmtImag(z.im);
         else                 return '' + z.re + '+' + fmtImag(z.im);
     },
     recompute: noOp,
-    makeConstraint: arrow => descent.makeComplexConstant(arrow.at),
+    makeConstraint(arrow) {
+        return descent.makeComplexConstant(arrow.at);
+    },
     showProvenance: noOp,
 };
 
@@ -567,8 +569,10 @@ const variableOp = {
     labelOffset: {x: 6, y: -14},
     label: (arrow, quiver) => quiver.nameNextArrow(),
     recompute: noOp,
-    makeConstraint: arrow => descent.makeComplexConstant(arrow.at), // XXX not really constant
-    showProvenance: (arrow, sheet) => { // XXX fix the caller
+    makeConstraint(arrow) {
+        return descent.makeComplexConstant(arrow.at); // XXX not really constant
+    },
+    showProvenance(arrow, sheet) { // XXX fix the caller
         sheet.drawLine(cnum.zero, arrow.at);
         sheet.drawSpiral(cnum.one, arrow.at, arrow.at);
     },
@@ -617,9 +621,7 @@ function makeSnapDragBackHand(oldHand, origin, offset) {
         isDirty: () => 0 < step,
         moveFromStart: noOp,
         onMove: noOp,
-        onEnd: () => {
-            return emptyHand;
-        },
+        onEnd: () => emptyHand,
         dragGrid,
         show: noOp,
     };
@@ -640,10 +642,10 @@ function makeAddHand(sheet, selection, perform) {
         moveFromStart,
         onMove: noOp,
         onEnd,
-        dragGrid: () => {
+        dragGrid() {
             sheet.translate(adding);
         },
-        show: () => {
+        show() {
             sheet.ctx.strokeStyle = 'magenta';
             sheet.drawLine(cnum.zero, adding);
             selection.forEach(arrow => {
@@ -664,20 +666,20 @@ function makeMultiplyHand(sheet, selection, perform) {
         return makeSnapDragBackHand(me, cnum.zero, cnum.sub(multiplying, cnum.one));
     }
     const me = {
-        isDirty: () => false,
+        isDirty() { return false; },
         moveFromStart,
         onMove: noOp,
         onEnd,
-        dragGrid: () => {
+        dragGrid() {
             sheet.ctx.transform(multiplying.re, multiplying.im, -multiplying.im, multiplying.re, 0, 0);
         },
-        show: () => {
+        show() {
             sheet.ctx.strokeStyle = 'green';
             sheet.drawSpiral(cnum.one, multiplying, multiplying);
             selection.forEach(arrow => {
                 sheet.drawSpiral(arrow.at, multiplying, cnum.mul(arrow.at, multiplying));
             });
-        }
+        },
     };
     return me;
 }
@@ -685,24 +687,24 @@ function makeMultiplyHand(sheet, selection, perform) {
 const addOp = {
     color: 'black',
     labelOffset: {x: 6, y: -14},
-    label: arrow => {
+    label(arrow) {
         if (arrow.arg1 === arrow.arg2) {
             return '2' + parenthesize(arrow.arg1.label);
         } else {
             return infixLabel(arrow.arg1, '+', arrow.arg2);
         }
     },
-    recompute: arrow => {
+    recompute(arrow) {
         arrow.at = cnum.add(arrow.arg1.at, arrow.arg2.at);
     },
-    makeConstraint: arrow => {
+    makeConstraint(arrow) {
         const value = cnum.add(arrow.arg1.at, arrow.arg2.at);
         const wires = [descent.genvar('+x', value.re),
                        descent.genvar('+y', value.im)];
         descent.complexAdd(arrow.arg1.wires, arrow.arg2.wires, wires);
         return wires;
     },
-    showProvenance: (arrow, sheet) => {
+    showProvenance(arrow, sheet) {
         sheet.drawLine(arrow.arg1.at, arrow.at);
     },
 };
@@ -710,24 +712,24 @@ const addOp = {
 const mulOp = {
     color: 'black',
     labelOffset: {x: 6, y: -14},
-    label: arrow => {
+    label(arrow) {
         if (arrow.arg1 === arrow.arg2) {
             return parenthesize(arrow.arg1.label) + '^2';
         } else {
             return infixLabel(arrow.arg1, '', arrow.arg2);
         }
     },
-    recompute: arrow => {
+    recompute(arrow) {
         arrow.at = cnum.mul(arrow.arg1.at, arrow.arg2.at);
     },
-    makeConstraint: arrow => {
+    makeConstraint(arrow) {
         const value = cnum.mul(arrow.arg1.at, arrow.arg2.at);
         const wires = [descent.genvar('*x', value.re),
                        descent.genvar('*y', value.im)];
         descent.complexMul(arrow.arg1.wires, arrow.arg2.wires, wires);
         return wires;
     },
-    showProvenance: (arrow, sheet) => {
+    showProvenance(arrow, sheet) {
         sheet.drawSpiral(arrow.arg1.at, arrow.arg2.at, arrow.at);
     },
 };
