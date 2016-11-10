@@ -193,6 +193,15 @@ function makeSheet(canvas, options) {
         ctx.fill();
     }
 
+    function drawCross(at) {
+        ctx.beginPath();
+        ctx.moveTo(scale * at.re - 9, scale * at.im);
+        ctx.lineTo(scale * at.re + 9, scale * at.im);
+        ctx.moveTo(scale * at.re, scale * at.im - 9);
+        ctx.lineTo(scale * at.re, scale * at.im + 9);
+        ctx.stroke();
+    }
+
     function drawLine(at1, at2) {
         ctx.beginPath();
         ctx.moveTo(scale * at1.re, scale * at1.im);
@@ -279,6 +288,7 @@ function makeSheet(canvas, options) {
         clear,
         ctx,
         drawDot,
+        drawCross,
         drawGrid,
         drawLine,
         drawSpiral,
@@ -379,6 +389,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
     function showArrow(arrow) {
         sheet.ctx.fillStyle = (arrow.stayPinned ? 'black' : arrow.op.color); // XXX look at descent.pins[] instead
         sheet.drawDot(arrow.at, dotRadius);
+        if (arrow.stayPinned) sheet.drawCross(arrow.at);
         sheet.ctx.fillStyle = 'black';
         sheet.drawText(arrow.at, arrow.label, arrow.op.labelOffset);
     }
