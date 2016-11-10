@@ -296,6 +296,7 @@ const emptyHand = {
     onEnd: () => emptyHand,
     dragGrid: noOp,
     show: noOp,
+    ughXXX: () => false,
 };
 
 // A sheet UI presents a quiver on a sheet, along with state
@@ -354,9 +355,10 @@ function makeSheetUI(quiver, canvas, options, controls) {
 
         options.preshow();
 
+        if (hand.ughXXX()) ctx.restore();
         ctx.fillStyle = 'red';
         selection.forEach(showArrowSelected);
-        ctx.restore();
+        if (!hand.ughXXX()) ctx.restore();
 
         hand.show();
 
@@ -605,6 +607,7 @@ function makeMoverHand(arrow, quiver) {
         onEnd,
         dragGrid: noOp,
         show: noOp,
+        ughXXX: () => false,
     };
 }
 
@@ -624,6 +627,7 @@ function makeSnapDragBackHand(oldHand, origin, offset) {
         onEnd: () => emptyHand,
         dragGrid,
         show: noOp,
+        ughXXX: () => 0 < step,
     };
 }
 
@@ -651,7 +655,8 @@ function makeAddHand(sheet, selection, perform) {
             selection.forEach(arrow => {
                 sheet.drawLine(arrow.at, cnum.add(arrow.at, adding));
             });
-        }
+        },
+        ughXXX: () => false,
     };
     return me;
 }
@@ -680,6 +685,7 @@ function makeMultiplyHand(sheet, selection, perform) {
                 sheet.drawSpiral(arrow.at, multiplying, cnum.mul(arrow.at, multiplying));
             });
         },
+        ughXXX: () => false,
     };
     return me;
 }
