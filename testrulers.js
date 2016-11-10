@@ -7,12 +7,10 @@ let quiver;                     // for debug
 function onLoad() {
     quiver = R.makeQuiver();
     return tempTest();
-    const ui = R.makeRulerUI(quiver, canvas, {}, {});
-    ui.show();
 }
 
 function tempTest() {
-    const ruler = R.makeNumberLineUI(quiver, canvas);
+    const ruler = R.makeNumberLineUI(quiver, canvas, {left: -6.5, right: 6.5});
     ruler.show();
     // ruler.drawGrid();
     // ruler.ctx.lineWidth = 1;
