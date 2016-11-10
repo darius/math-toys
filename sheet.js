@@ -203,10 +203,10 @@ function makeSheet(canvas, options) {
 
     function drawCross(at) {
         ctx.beginPath();
-        ctx.moveTo(scale * at.re - 9, scale * at.im);
-        ctx.lineTo(scale * at.re + 9, scale * at.im);
-        ctx.moveTo(scale * at.re, scale * at.im - 9);
-        ctx.lineTo(scale * at.re, scale * at.im + 9);
+        ctx.moveTo(scale * at.re - 12, scale * at.im);
+        ctx.lineTo(scale * at.re + 12, scale * at.im);
+        ctx.moveTo(scale * at.re, scale * at.im - 12);
+        ctx.lineTo(scale * at.re, scale * at.im + 12);
         ctx.stroke();
     }
 
