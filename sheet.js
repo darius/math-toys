@@ -60,6 +60,13 @@ function makeQuiver() {
         descent.pins[arrow.wires[1]] = pinOn;
     }
 
+    function somePinnedResult() {
+        for (const arrow of arrows) {
+            if (arrow.op !== variableOp && arrow.stayPinned) return true;
+        }
+        return false;
+    }
+
     function add(arrow) {
         arrow.label = arrow.op.label(arrow, quiver);
         arrow.wires = arrow.op.makeConstraint(arrow);
@@ -150,6 +157,7 @@ function makeQuiver() {
         pin,
         pinVariables,
         satisfy,
+        somePinnedResult,
     };
     return quiver;
 }
@@ -596,7 +604,7 @@ const variableOp = {
 function makeMoverHand(arrow, quiver) {
     const startAt = arrow.at;
 
-    const pinEmAll = arrow.op === variableOp;
+    const pinEmAll = arrow.op === variableOp && !quiver.somePinnedResult();
     quiver.pinVariables(pinEmAll);
     if (!pinEmAll) quiver.pin(arrow, true);
 
@@ -629,9 +637,11 @@ function makeSnapDragBackHand(oldHand, origin, offset) {
     let step = nsteps;
     function dragGrid() {
         // This is crude and side-effecty, but let's start here anyway.
-        --step;
-        oldHand.moveFromStart(cnum.add(origin, cnum.rmul(step/nsteps, cnum.sub(offset, origin))));
-        oldHand.dragGrid();
+        if (0 < step) {
+            --step;
+            oldHand.moveFromStart(cnum.add(origin, cnum.rmul(step/nsteps, cnum.sub(offset, origin))));
+            oldHand.dragGrid();
+        }
     }
     return {
         isDirty: () => 0 < step,
