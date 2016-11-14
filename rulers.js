@@ -92,6 +92,7 @@ function makeNumberLine(canvas, yPixels, options) {
     function show(arrows, selection, showText, shift_, stretch_) {
         shift = shift_ === void 0 ? 0 : -shift_; // XXX hacky -
         stretch = stretch_ === void 0 ? 1 : stretch_;
+
         ctx.save();
         ctx.translate(width/2 - scale * (shift + (options.right + options.left) / 2),
                       canvas.height/2 + yPixels);
@@ -121,9 +122,11 @@ function makeNumberLine(canvas, yPixels, options) {
     }
 
     function drawNumberLine() {
+        const left = Math.floor(options.left + shift);
+        const right = Math.ceil(options.right + shift);
         ctx.fillStyle = '#ed9';
-        ctx.fillRect(scale * (options.left + shift), 0,
-                     width + Math.abs(scale * shift), // XXX actually think about this
+        ctx.fillRect(scale * left, 0,
+                     scale * (right - left),
                      height);
     }
 
@@ -134,8 +137,10 @@ function makeNumberLine(canvas, yPixels, options) {
         const right = Math.ceil(options.right + shift);
         for (let i = left; i <= right; ++i) {
             ctx.fillStyle = 'grey';
-            for (let j = 1; j <= 9; ++j) {
-                drawTick(i + j/10, 10);
+            if (i < right) {
+                for (let j = 1; j <= 9; ++j) {
+                    drawTick(i + j/10, 10);
+                }
             }
             ctx.fillStyle = i === optActiveAt ? 'red' : 'black';
             drawTick(i, 15);
