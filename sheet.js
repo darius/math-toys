@@ -488,7 +488,6 @@ function makeSheetUI(quiver, canvas, options, controls) {
     addPointerListener(canvas, {
         onStart: xy => {
             if (hand !== emptyHand) {
-                console.log("somehow we have a hand still");
                 hand.onEnd();
             }
             handStartedAt = sheet.pointFromXY(xy);
