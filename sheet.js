@@ -143,7 +143,7 @@ function makeQuiver() {
     }
 
     function satisfy(nsteps) {
-        descent.relax(nsteps);
+        descent.descend(nsteps);
         arrows.forEach(arrow => {
             arrow.at.re = descent.wires[arrow.wires[0]];
             arrow.at.im = descent.wires[arrow.wires[1]];

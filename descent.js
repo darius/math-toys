@@ -62,10 +62,10 @@ function realMul(a, b, v) {
 
 let stepSize = 0.01;
 
-function relax(nsteps) {
+function descend(nsteps) {
     for (let trial = 0; trial < nsteps; ++trial) {
-        gradient().forEach((d, i) => {
-            if (!pins[i]) wires[i] -= stepSize * d;
+        gradient().forEach((difference, i) => {
+            if (!pins[i]) wires[i] -= stepSize * difference;
         });
         if (0) console.log('step', trial, 'error', totalError());
     }
@@ -195,7 +195,7 @@ exports.mathtoys.descent = {
 
     substitute,
 
-    relax,
+    descend,
     totalError,
 };
 })(this);
