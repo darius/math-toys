@@ -71,27 +71,6 @@ function descend(nsteps) {
     }
 }
 
-function totalError() {
-    return sum(constraints.map(error));
-}
-
-function sum(numbers) {
-    return numbers.reduce((total, n) => total + n, 0);
-}
-
-function error([op, a, b, v]) {
-    const av = wires[a];
-    const bv = wires[b];
-    const vv = wires[v];
-    let r;
-    switch (op) {
-    case '+': r = av + bv; break;
-    case '*': r = av * bv; break;
-    default: throw new Error('XXX');
-    }
-    return 0.5 * (r - vv) * (r - vv);
-}
-
 function gradient() {
     const pd = wires.map(_ => 0);
     for (const [op, a, b, v] of constraints) {
@@ -123,6 +102,27 @@ function gradient() {
         }
     }
     return pd;
+}
+
+function totalError() {
+    return sum(constraints.map(error));
+}
+
+function sum(numbers) {
+    return numbers.reduce((total, n) => total + n, 0);
+}
+
+function error([op, a, b, v]) {
+    const av = wires[a];
+    const bv = wires[b];
+    const vv = wires[v];
+    let r;
+    switch (op) {
+    case '+': r = av + bv; break;
+    case '*': r = av * bv; break;
+    default: throw new Error('XXX');
+    }
+    return 0.5 * (r - vv) * (r - vv);
 }
 
 
