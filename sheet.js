@@ -10,6 +10,7 @@ const pointing = mathtoys.pointing;
 const drawSpline = mathtoys.spline_interpolate.drawSpline;
 const descent = mathtoys.descent;
 
+const maxMergeDistance = 2;
 const maxClickDistance = 2;
 const minSelectionDistance = 20;
 const dotRadius = 3;
@@ -60,9 +61,12 @@ function makeQuiver() {
         descent.pins[arrow.wires[1]] = pinOn;
     }
 
-    function somePinnedResult() {
+    function someConstrainedResult() {
+        // TODO account for merged results... better
         for (const arrow of arrows) {
-            if (arrow.op !== variableOp && arrow.stayPinned) return true;
+            if (0 < arrow.also.length || (arrow.op !== variableOp && arrow.stayPinned)) {
+                return true;
+            }
         }
         return false;
     }
@@ -71,6 +75,8 @@ function makeQuiver() {
         arrow.label = arrow.op.label(arrow, quiver);
         arrow.wires = arrow.op.makeConstraint(arrow);
         arrow.stayPinned = false; // TODO: simpler to make true for constantOp?
+        arrow.merged = false;
+        arrow.also = [];
         arrows.push(arrow);
         recompute(arrow);
         notify({tag: 'add', arrow: arrow});
@@ -144,20 +150,86 @@ function makeQuiver() {
         });
     }
 
+    // Return a list of equivalence classes: i.e. of lists of arrows
+    // that are close enough to merge. The classes are disjoint, and
+    // each has length >1.
+    function listCoincidences() {
+        const radius = 0.1; // XXX maxMergeDistance / sheet.scale, but we don't know sheet here
+        const results = [];
+        for (let i = 0; i < arrows.length; ++i) {
+            const at_i = arrows[i].at;
+            const equivs = [];
+            for (let j = i+1; j < arrows.length; ++j) {
+                const d = cnum.distance(at_i, arrows[j].at);
+                if (d < radius) equivs.push(arrows[j]);
+            }
+            if (0 < equivs.length) {
+                equivs.push(arrows[i]);
+                results.push(equivs);
+            }
+        }
+        return results;
+    }
+
+    function mergeCoincidences() {
+        listCoincidences().forEach(merge);
+    }
+
+    // Change all of equivs to become one.
+    // Pre: 0 < equivs.length
+    function merge(equivs) {
+
+        // Pick the representative.
+        let repr = equivs[0];
+        for (let i = 1; i < equivs.length; ++i) {
+            const arrow = equivs[i];
+            if (arrow.op === constantOp
+                || (arrow.op === variableOp && repr.op !== constantOp)) {
+                repr = arrow;
+            }
+        }
+
+        // Substitute for it.
+        const substs = new Map();
+        for (const arrow of equivs) {
+            if (arrow !== repr) {
+                substs.set(arrow.wires[0], repr.wires[0]);
+                substs.set(arrow.wires[1], repr.wires[1]);
+                arrow.merged = true;
+                repr.also.push(arrow);
+                // TODO change arrow.op too? to something new?
+                repr.label = repr.label + ' = ' + arrow.label;
+            }
+        }
+        descent.substitute(substs);
+
+        // Remove merged-out arrows from the quiver.
+        let j = 0;
+        while (j < arrows.length) {
+            if (arrows[j].merged) arrows.splice(j, 1);
+            else                  ++j;
+        }
+
+        // Notify
+        // TODO make this a new event type?
+    }
+
     const quiver = {
         add,
         addWatcher,
         asFunction,
+        listCoincidences,
         findLabel,
         isEmpty,
         getArrows,
         getFreeArrows,
+        mergeCoincidences,
         nameNextArrow,
         onMove,
         pin,
         pinVariables,
         satisfy,
-        somePinnedResult,
+        someConstrainedResult,
     };
     return quiver;
 }
@@ -380,6 +452,19 @@ function makeSheetUI(quiver, canvas, options, controls) {
 
         hand.show();
 
+        const coincidenceGroups = quiver.listCoincidences();
+        if (0 == coincidenceGroups.length) {
+            mergeButton.disabled = true;  // XXX bad info hiding
+        } else {
+            mergeButton.disabled = false;  // XXX bad info hiding
+            ctx.fillStyle = 'blue';
+            for (const equivs of coincidenceGroups) {
+                for (const arrow of equivs) {
+                    sheet.drawDot(arrow.at, dotRadius*2);
+                }
+            }
+        }
+
         quiver.getArrows().forEach(showArrowAsMade);
 
         ctx.restore();
@@ -387,6 +472,10 @@ function makeSheetUI(quiver, canvas, options, controls) {
 
     function showArrowAsMade(arrow) {
         arrow.op.showProvenance(arrow, sheet);
+        for (const merged of arrow.also) {
+            merged.at = arrow.at;
+            merged.op.showProvenance(merged, sheet);
+        }
         showArrow(arrow);
     }
 
@@ -395,7 +484,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
     }
 
     function showArrow(arrow) {
-        sheet.ctx.fillStyle = (arrow.stayPinned ? 'black' : arrow.op.color); // XXX look at descent.pins[] instead
+        sheet.ctx.fillStyle = (arrow.stayPinned ? 'black' : arrow.op.color);
         sheet.drawDot(arrow.at, dotRadius);
         if (arrow.stayPinned) sheet.drawCross(arrow.at);
         sheet.ctx.fillStyle = 'black';
@@ -514,7 +603,13 @@ function makeSheetUI(quiver, canvas, options, controls) {
         },
     });
 
+    function merge() {
+        quiver.mergeCoincidences();
+        heyImDirty();
+    }
+
     return {
+        merge,
         pinSelection,
         sheet,
         show: heyImDirty,
@@ -603,7 +698,7 @@ const variableOp = {
 function makeMoverHand(arrow, quiver) {
     const startAt = arrow.at;
 
-    const pinEmAll = arrow.op === variableOp && !quiver.somePinnedResult();
+    const pinEmAll = arrow.op === variableOp && !quiver.someConstrainedResult();
     quiver.pinVariables(pinEmAll);
     if (!pinEmAll) quiver.pin(arrow, true);
 
@@ -632,7 +727,7 @@ function makeMoverHand(arrow, quiver) {
 }
 
 function makeSnapDragBackHand(oldHand, origin, offset) {
-    const nsteps = 5;
+    const nsteps = 6;
     let step = nsteps;
     function dragGrid() {
         // This is crude and side-effecty, but let's start here anyway.

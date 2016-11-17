@@ -57,6 +57,15 @@ function realMul(a, b, v) {
     addConstraint('*', a, b, v);
 }
 
+function substitute(substs) {
+    for (const c of constraints) {
+        let x;
+        x = substs.get(c[1]); if (x !== void 0) c[1] = x;
+        x = substs.get(c[2]); if (x !== void 0) c[2] = x;
+        x = substs.get(c[3]); if (x !== void 0) c[3] = x;
+    }
+}
+
 
 // Gradient descent, supposing I'm not screwing it up.
 
@@ -180,6 +189,8 @@ exports.mathtoys.descent = {
     complexMul,
     makeComplexConstant,
     makeComplexRef,
+
+    substitute,
 
     relax,
     totalError,

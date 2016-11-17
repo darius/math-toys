@@ -18,16 +18,22 @@
             style="background-color: #eee"
             >
     </canvas>
-    <br><input type="button" id="pinButton" value="Toggle pinning the selected points" onclick="onPin()"><br>
-    Rename <input type="text" id="renameFrom"> to <input type="text" id="renameTo"> <input type="button" value="Rename" onclick="onRename()">
+    <br>
+    <input type="button" id="pinButton" value="Pin/unpin points" onclick="onPin()">
+    <input disabled type="button" id="mergeButton" value="Merge points" onclick="onMerge()">
+    <br>
+    Rename <input type="text" id="renameFrom" size="5">
+    to <input type="text" id="renameTo" size="5">
+    <input type="button" value="Rename" onclick="onRename()">
   </div>
 
   <script type="text/javascript">
     'use strict';
-    var canvas     = document.getElementById("canvas");
-    var pinButton  = document.getElementById("pinButton");
-    var renameFrom = document.getElementById("renameFrom");
-    var renameTo   = document.getElementById("renameTo");
+    var canvas      = document.getElementById("canvas");
+    var pinButton   = document.getElementById("pinButton");
+    var mergeButton = document.getElementById("mergeButton");
+    var renameFrom  = document.getElementById("renameFrom");
+    var renameTo    = document.getElementById("renameTo");
   </script>
   <script type="text/javascript" src="requestAnimationFrame.js"></script>
   <script type="text/javascript" src="spline_interpolate.js"></script>

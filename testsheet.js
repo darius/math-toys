@@ -16,6 +16,11 @@ function onPin() {
     ui.show();
 }
 
+function onMerge() {
+    ui.merge();
+    ui.show();
+}
+
 function onRename() {
     const arrow = quiver.findLabel(renameFrom.value);
     const newLabel = renameTo.value.trim();
