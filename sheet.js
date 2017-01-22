@@ -234,12 +234,34 @@ function makeQuiver() {
     return quiver;
 }
 
+function unfuzzCanvas(canvas) {
+    // From http://stackoverflow.com/questions/35820750/understanding-html-retina-canvas-support
+    const ctx = canvas.getContext('2d');
+    const bsRatio = (   ctx.backingStorePixelRatio
+                     || ctx.webkitBackingStorePixelRatio
+                     || ctx.mozBackingStorePixelRatio
+                     || ctx.msBackingStorePixelRatio
+                     || ctx.oBackingStorePixelRatio
+                     || ctx.backingStorePixelRatio
+                     || 1);
+    const ratio = (window.devicePixelRatio || 1) / bsRatio;
+    if (ratio !== 1) {
+        canvas.style.width  = canvas.width  + 'px';
+        canvas.style.height = canvas.height + 'px';
+        canvas.width  *= ratio;
+        canvas.height *= ratio;
+        if (0) ctx.scale(ratio, ratio);
+    }
+    return ratio;
+}
+
 // A sheet is a canvas displaying the complex-number plane.
 function makeSheet(canvas, options) {
     options = override({center:   cnum.zero,
                         font:     '12pt Georgia',
                         realSpan: 8},
                        options);
+    const fuzzScale = unfuzzCanvas(canvas); // XXX make sure this only happens once
 
     const ctx    = canvas.getContext('2d');
     const width  = canvas.width;   // N.B. it's best if these are even
@@ -255,8 +277,13 @@ function makeSheet(canvas, options) {
     ctx.scale(1, -1);
 
     // Convert from canvas-relative pixel coordinates, such as from a mouse event.
+    const s_width  = parseInt(canvas.style.width  || canvas.width); //XXX strip 'px'
+    const s_height = parseInt(canvas.style.height || canvas.height);
+    const s_right  = s_width/2;
+    const s_top    = s_height/2;
+    const s_scale  = s_width / options.realSpan;
     function pointFromXY(xy) {
-        return {re: (xy.x - right) / scale, im: (top - xy.y) / scale};
+        return {re: (xy.x - s_right) / s_scale, im: (s_top - xy.y) / s_scale};
     }
 
     if (options.center.re !== 0 || options.center.im !== 0) {
@@ -269,16 +296,17 @@ function makeSheet(canvas, options) {
 
     function drawDot(at, radius) {
         ctx.beginPath();
-        ctx.arc(scale * at.re, scale * at.im, radius, 0, tau);
+        ctx.arc(scale * at.re, scale * at.im, radius * fuzzScale, 0, tau);
         ctx.fill();
     }
 
     function drawCross(at) {
+        const d = 12 * fuzzScale;
         ctx.beginPath();
-        ctx.moveTo(scale * at.re - 12, scale * at.im);
-        ctx.lineTo(scale * at.re + 12, scale * at.im);
-        ctx.moveTo(scale * at.re, scale * at.im - 12);
-        ctx.lineTo(scale * at.re, scale * at.im + 12);
+        ctx.moveTo(scale * at.re - d, scale * at.im);
+        ctx.lineTo(scale * at.re + d, scale * at.im);
+        ctx.moveTo(scale * at.re, scale * at.im - d);
+        ctx.lineTo(scale * at.re, scale * at.im + d);
         ctx.stroke();
     }
 
@@ -291,6 +319,7 @@ function makeSheet(canvas, options) {
 
     // N.B. textOffset is in canvas (xy) coordinates.
     function drawText(at, text, textOffset) {
+        // XXX incorporate fuzzScale
         const x = at.re * scale + textOffset.x;
         const y = at.im * scale + textOffset.y;
         ctx.save();
@@ -373,6 +402,7 @@ function makeSheet(canvas, options) {
         drawLine,
         drawSpiral,
         drawText,
+        fuzz: fuzzScale,
         pointFromXY,
         scale,
         translate,
@@ -400,8 +430,8 @@ function makeSheetUI(quiver, canvas, options, controls) {
 
     const sheet = makeSheet(canvas, options);
 
-    const minSelectionD = minSelectionDistance / sheet.scale;
-    const maxClickD     = maxClickDistance / sheet.scale;
+    const minSelectionD = minSelectionDistance / (sheet.scale / sheet.fuzz);
+    const maxClickD     = maxClickDistance / (sheet.scale / sheet.fuzz);
 
     const selection = [];
 

@@ -45,12 +45,12 @@ const pairs = [];
 
 function addSheet(arrow) {
     const canvas = document.createElement('canvas');
-    canvas.width = canvas1.width;
-    canvas.height = canvas1.height;
-    document.getElementById('sheets').appendChild(canvas);
-    document.getElementById('sheets').appendChild(document.createTextNode(' '));
+    canvas.width = parseInt(canvas1.style.width || canvas1.width);
+    canvas.height = parseInt(canvas1.style.height || canvas1.height);
     const sheet = sh.makeSheet(canvas);
     pairs.push([arrow, sheet]);
+    document.getElementById('sheets').appendChild(canvas);
+    document.getElementById('sheets').appendChild(document.createTextNode(' '));
     update();
 }
 
@@ -81,7 +81,7 @@ function doUpdates() {
         doUpdate(pair);
         pendingUpdates.splice(0, 1);
         requestAnimationFrame(doUpdates);
-        console.log(Date.now() - startTime, pair[0].label);
+        if (0) console.log(Date.now() - startTime, pair[0].label);
     }
 }
 
