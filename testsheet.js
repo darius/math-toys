@@ -6,6 +6,11 @@ const sh = mathtoys.sheet;
 let quiver, ui;                     // global/mutable for debugging
 
 function onLoad() {
+    const side = Math.min(window.innerWidth - 100,
+                          window.innerHeight - 100);       
+    canvas.width = side;
+    canvas.height = side;
+
     quiver = sh.makeQuiver();
     ui = sh.makeSheetUI(quiver, canvas, {}, {});
     ui.show();
