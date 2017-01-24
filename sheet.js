@@ -257,11 +257,11 @@ function unfuzzCanvas(canvas) {
 
 // A sheet is a canvas displaying the complex-number plane.
 function makeSheet(canvas, options) {
+    const fuzzScale = unfuzzCanvas(canvas); // XXX make sure this only happens once
     options = override({center:   cnum.zero,
-                        font:     '12pt Georgia',
+                        font:     '' + (12 * fuzzScale) + 'pt Georgia',  // XXX what if noninteger?
                         realSpan: 8},
                        options);
-    const fuzzScale = unfuzzCanvas(canvas); // XXX make sure this only happens once
 
     const ctx    = canvas.getContext('2d');
     const width  = canvas.width;   // N.B. it's best if these are even
@@ -319,9 +319,8 @@ function makeSheet(canvas, options) {
 
     // N.B. textOffset is in canvas (xy) coordinates.
     function drawText(at, text, textOffset) {
-        // XXX incorporate fuzzScale
-        const x = at.re * scale + textOffset.x;
-        const y = at.im * scale + textOffset.y;
+        const x = at.re * scale + fuzzScale * textOffset.x;
+        const y = at.im * scale + fuzzScale * textOffset.y;
         ctx.save();
         ctx.scale(1, -1); // Back into left-handed coordinates so the text isn't flipped
         ctx.fillText(text, x, -y);
