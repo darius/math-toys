@@ -756,14 +756,13 @@ function makeMoverHand(arrow, quiver) {
     };
 }
 
-function makeSnapDragBackHand(oldHand, origin, offset) {
-    const nsteps = 9;
-    let step = nsteps;
+function makeSnapDragBackHand(oldHand, path) {
+    let step = path.length;
     function dragGrid() {
         // This is crude and side-effecty, but let's start here anyway.
         if (0 < step) {
             --step;
-            oldHand.moveFromStart(cnum.add(origin, cnum.rmul(step/nsteps, cnum.sub(offset, origin))));
+            oldHand.moveFromStart(path[step]);
             oldHand.dragGrid();
         }
     }
@@ -773,7 +772,7 @@ function makeSnapDragBackHand(oldHand, origin, offset) {
         onMove: noOp,
         onEnd: () => emptyHand,
         dragGrid,
-        show: noOp,
+        show: noOp, // oldHand.show,
         ughXXX: () => 0 < step,
     };
 }
@@ -786,7 +785,11 @@ function makeAddHand(sheet, selection, perform) {
     }
     function onEnd() {
         perform(addOp, adding);
-        return makeSnapDragBackHand(me, cnum.zero, adding);
+        const path = [];
+        for (let step = 0; step < 9; ++step) {
+            path.push(cnum.rmul(step/9, adding));
+        }
+        return makeSnapDragBackHand(me, path);
     }
     const me = {
         isDirty: () => false,
@@ -815,7 +818,13 @@ function makeMultiplyHand(sheet, selection, perform) {
     }
     function onEnd() {
         perform(mulOp, multiplying);
-        return makeSnapDragBackHand(me, cnum.zero, cnum.sub(multiplying, cnum.one));
+        // The snapback path. computeSpiralArc makes too many steps
+        // for our animation, so we delete some to speed it up.
+        const path = computeSpiralArc(cnum.one, multiplying, multiplying).map(z => cnum.sub(z, cnum.one));
+        for (let step = path.length - 1; 0 < step; step -= 2) {
+            path.splice(step - 1, 1);
+        }
+        return makeSnapDragBackHand(me, path);
     }
     const me = {
         isDirty() { return false; },
@@ -901,7 +910,7 @@ function parenthesize(name) {
 // Assuming uv = u*v, it should approximate a logarithmic spiral
 // similar to one from 1 to v.
 function computeSpiralArc(u, v, uv) {
-    // Multiples of v^(1/8) as points on the spiral from 1 to v.
+    // Multiples of v^(1/16) as points on the spiral from 1 to v.
     const h8 = cnum.roughSqrt(v);
     const h4 = cnum.roughSqrt(h8);
     const h2 = cnum.roughSqrt(h4);
