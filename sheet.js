@@ -604,7 +604,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
     let handStartedAt;
     let strayed;
 
-    addPointerListener(canvas, {
+    addPointerListener(window, canvas, {
         onStart: xy => {
             if (hand !== emptyHand) {
                 hand.onEnd();
@@ -651,9 +651,10 @@ function makeConstant(value) {
     return {op: constantOp, at: value};
 }
 
-function addPointerListener(element, listener) {
+function addPointerListener(panel, element, listener) {
 
     function onTouchstart(event) {
+        if (event.target !== element) return false;
         event.preventDefault();     // to disable mouse events
         if (event.touches.length === 1) {
             listener.onStart(pointing.touchCoords(element, event.touches[0]));
@@ -668,6 +669,7 @@ function addPointerListener(element, listener) {
     }
 
     function onTouchend(event) {
+        // XXX should do something logical when e.g. dragging a point outside the viewport
         if (event.touches.length === 0) {
             listener.onEnd();
         } else {
@@ -675,13 +677,17 @@ function addPointerListener(element, listener) {
         }
     }
 
-    element.addEventListener('touchstart', onTouchstart);
-    element.addEventListener('touchmove',  onTouchmove);
-    element.addEventListener('touchend',   onTouchend);
+    panel.addEventListener('touchstart', onTouchstart);
+    panel.addEventListener('touchmove',  onTouchmove);
+    panel.addEventListener('touchend',   onTouchend);
 
-    element.addEventListener('mousedown', pointing.leftButtonOnly(pointing.mouseHandler(element, listener.onStart)));
-    element.addEventListener('mousemove', pointing.mouseHandler(element, listener.onMove));
-    element.addEventListener('mouseup',   pointing.mouseHandler(element, coords => {
+    const onMousedown = pointing.leftButtonOnly(pointing.mouseHandler(element, listener.onStart));
+    panel.addEventListener('mousedown', event => {
+        if (event.target !== element) return false;
+        return onMousedown(event);
+    });
+    panel.addEventListener('mousemove', pointing.mouseHandler(element, listener.onMove));
+    panel.addEventListener('mouseup',   pointing.mouseHandler(element, coords => {
         listener.onMove(coords);
         listener.onEnd();
     }));
