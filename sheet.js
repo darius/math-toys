@@ -343,18 +343,19 @@ function makeSheet(canvas, options) {
         let i, j;
         ctx.strokeStyle = 'grey';
         ctx.lineWidth = 1;
+        const D = 5;
         for (i = 1; (i-1) * scale <= right; ++i) { // XXX hack
             ctx.globalAlpha = 0.25;
-            for (j = 1; j <= 9; ++j) {
-                gridLines((i-1 + j/10) * scale, bottom, (i-1 + j/10) * scale, top);
+            for (j = 1; j < D; ++j) {
+                gridLines((i-1 + j/D) * scale, bottom, (i-1 + j/D) * scale, top);
             }
             ctx.globalAlpha = 1;
             gridLines(i * scale, bottom, i * scale, top);
         }
         for (i = 1; (i-1) * scale <= top; ++i) { // XXX hack
             ctx.globalAlpha = 0.25;
-            for (j = 1; j <= 9; ++j) {
-                gridLines(left, (i-1 + j/10) * scale, right, (i-1 + j/10) * scale);
+            for (j = 1; j < D; ++j) {
+                gridLines(left, (i-1 + j/D) * scale, right, (i-1 + j/D) * scale);
             }
             ctx.globalAlpha = 1;
             gridLines(left, i * scale, right, i * scale);
