@@ -45,8 +45,9 @@ const pairs = [];
 
 function addSheet(arrow) {
     const canvas = document.createElement('canvas');
-    canvas.width = parseInt(canvas1.style.width || canvas1.width);
-    canvas.height = parseInt(canvas1.style.height || canvas1.height);
+    const size = fuzzySize(canvas1);
+    canvas.width = size.width;
+    canvas.height = size.height;
     const sheet = sh.makeSheet(canvas);
     pairs.push([arrow, sheet]);
     document.getElementById('sheets').appendChild(canvas);

@@ -234,27 +234,6 @@ function makeQuiver() {
     return quiver;
 }
 
-function unfuzzCanvas(canvas) {
-    // From http://stackoverflow.com/questions/35820750/understanding-html-retina-canvas-support
-    const ctx = canvas.getContext('2d');
-    const bsRatio = (   ctx.backingStorePixelRatio
-                     || ctx.webkitBackingStorePixelRatio
-                     || ctx.mozBackingStorePixelRatio
-                     || ctx.msBackingStorePixelRatio
-                     || ctx.oBackingStorePixelRatio
-                     || ctx.backingStorePixelRatio
-                     || 1);
-    const ratio = (window.devicePixelRatio || 1) / bsRatio;
-    if (ratio !== 1) {
-        canvas.style.width  = canvas.width  + 'px';
-        canvas.style.height = canvas.height + 'px';
-        canvas.width  *= ratio;
-        canvas.height *= ratio;
-        if (0) ctx.scale(ratio, ratio);
-    }
-    return ratio;
-}
-
 // A sheet is a canvas displaying the complex-number plane.
 function makeSheet(canvas, options) {
     const fuzzScale = unfuzzCanvas(canvas); // XXX make sure this only happens once
@@ -277,11 +256,10 @@ function makeSheet(canvas, options) {
     ctx.scale(1, -1);
 
     // Convert from canvas-relative pixel coordinates, such as from a mouse event.
-    const s_width  = parseInt(canvas.style.width  || canvas.width); //XXX strip 'px'
-    const s_height = parseInt(canvas.style.height || canvas.height);
-    const s_right  = s_width/2;
-    const s_top    = s_height/2;
-    const s_scale  = s_width / options.realSpan;
+    const s_ = fuzzySize(canvas);
+    const s_right  = s_.width/2;
+    const s_top    = s_.height/2;
+    const s_scale  = s_.width / options.realSpan;
     function pointFromXY(xy) {
         return {re: (xy.x - s_right) / s_scale, im: (s_top - xy.y) / s_scale};
     }

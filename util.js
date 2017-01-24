@@ -21,3 +21,33 @@ const override =
         return obj1;
     });
 
+
+// TODO wrap in own module, I guess:
+
+function unfuzzCanvas(canvas) {
+    // From http://stackoverflow.com/questions/35820750/understanding-html-retina-canvas-support
+    const ctx = canvas.getContext('2d');
+    const bsRatio = (   ctx.backingStorePixelRatio
+                     || ctx.webkitBackingStorePixelRatio
+                     || ctx.mozBackingStorePixelRatio
+                     || ctx.msBackingStorePixelRatio
+                     || ctx.oBackingStorePixelRatio
+                     || ctx.backingStorePixelRatio
+                     || 1);
+    const ratio = (window.devicePixelRatio || 1) / bsRatio;
+    if (ratio !== 1) {
+        canvas.style.width  = canvas.width  + 'px';
+        canvas.style.height = canvas.height + 'px';
+        canvas.width  *= ratio;
+        canvas.height *= ratio;
+        if (0) ctx.scale(ratio, ratio);
+    }
+    return ratio;
+}
+
+function fuzzySize(canvas) { // XXX better name
+    return {
+        width: parseInt(canvas.style.width  || canvas.width), //XXX strip 'px'
+        height: parseInt(canvas.style.height || canvas.height)
+    };
+}
