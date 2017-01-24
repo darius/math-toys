@@ -5,9 +5,9 @@
 
 'use strict';
 
-// XXX review the touch API, use clientX etc. instead?
+// XXX review the touch API and see if this is right
 function touchCoords(canvas, touch) {
-    return canvasCoords(canvas, touch.pageX, touch.pageY);
+    return canvasCoords(canvas, touch.clientX, touch.clientY);
 }
 
 function mouseCoords(canvas, event) {
