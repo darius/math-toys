@@ -651,19 +651,19 @@ function makeConstant(value) {
     return {op: constantOp, at: value};
 }
 
-function addPointerListener(canvas, listener) {
+function addPointerListener(element, listener) {
 
     function onTouchstart(event) {
         event.preventDefault();     // to disable mouse events
         if (event.touches.length === 1) {
-            listener.onStart(pointing.touchCoords(canvas, event.touches[0]));
+            listener.onStart(pointing.touchCoords(element, event.touches[0]));
         }
     }
 
     function onTouchmove(event) {
         if (event.touches.length === 1) {
             // XXX need to track by touch identifier rather than array index
-            listener.onMove(pointing.touchCoords(canvas, event.touches[0]));
+            listener.onMove(pointing.touchCoords(element, event.touches[0]));
         }
     }
 
@@ -675,13 +675,13 @@ function addPointerListener(canvas, listener) {
         }
     }
 
-    canvas.addEventListener('touchstart', onTouchstart);
-    canvas.addEventListener('touchmove',  onTouchmove);
-    canvas.addEventListener('touchend',   onTouchend);
+    element.addEventListener('touchstart', onTouchstart);
+    element.addEventListener('touchmove',  onTouchmove);
+    element.addEventListener('touchend',   onTouchend);
 
-    canvas.addEventListener('mousedown', pointing.leftButtonOnly(pointing.mouseHandler(canvas, listener.onStart)));
-    canvas.addEventListener('mousemove', pointing.mouseHandler(canvas, listener.onMove));
-    canvas.addEventListener('mouseup',   pointing.mouseHandler(canvas, coords => {
+    element.addEventListener('mousedown', pointing.leftButtonOnly(pointing.mouseHandler(element, listener.onStart)));
+    element.addEventListener('mousemove', pointing.mouseHandler(element, listener.onMove));
+    element.addEventListener('mouseup',   pointing.mouseHandler(element, coords => {
         listener.onMove(coords);
         listener.onEnd();
     }));
