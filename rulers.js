@@ -68,12 +68,12 @@ function makeQuiver() {
     return quiver;
 }
 
-const defaultFont = '12pt sans-serif';
+const defaultFont = 'pt sans-serif';
 
-function makeNumberLine(canvas, yPixels, options) {
+function makeNumberLine(canvas, yPixels, options, fuzzScale) { // XXX ugh fuzzScale
     options = override({
         facing: 1,
-        font:   defaultFont,
+        font:   ('' + (fuzzScale * 12)) + defaultFont,
         labels: true,
         left:  -3,
         right:  6,
@@ -95,7 +95,7 @@ function makeNumberLine(canvas, yPixels, options) {
 
         ctx.save();
         ctx.translate(width/2 - scale * (shift + (options.right + options.left) / 2),
-                      canvas.height/2 + yPixels);
+                      canvas.height/2 + fuzzScale * yPixels);
         ctx.scale(stretch, 1);
         ctx.font = options.font;
         ctx.textAlign = 'center';
@@ -127,7 +127,7 @@ function makeNumberLine(canvas, yPixels, options) {
         ctx.fillStyle = '#ed9';
         ctx.fillRect(scale * left, 0,
                      scale * (right - left),
-                     height);
+                     fuzzScale * height);
     }
 
     function drawTicks(optActiveAt) {
@@ -149,8 +149,9 @@ function makeNumberLine(canvas, yPixels, options) {
     }
 
     function drawTick(x, h) {
+        h *= fuzzScale;
         if (options.facing === 1) ctx.fillRect(scale * x, 0, 1, h);
-        else                      ctx.fillRect(scale * x, height-h, 1, h);
+        else                      ctx.fillRect(scale * x, fuzzScale*height-h, 1, h);
     }
 
     function drawCursor(x) {
@@ -158,6 +159,7 @@ function makeNumberLine(canvas, yPixels, options) {
         ctx.translate(width/2,
                       canvas.height/2 + yPixels);
         ctx.fillStyle = 'red';
+        // XXX fuzzScale * ?
         const h = 30;           // XXX depends on higher-level layout
         if (options.facing === 1) ctx.fillRect(scale * x, -h, 1, h);
         else                      ctx.fillRect(scale * x, 40, 1, h);
@@ -166,13 +168,13 @@ function makeNumberLine(canvas, yPixels, options) {
 
     function drawLabel(x, label) {
         const dy = options.facing === 1 ? 15 : height-15;
-        ctx.fillText(label, scale * x, dy);
+        ctx.fillText(label, scale * x, fuzzScale * dy);
     }
 
     function drawDot(at, radius) {
-        const y = options.facing === 1 ? 0 : height;
+        const y = options.facing === 1 ? 0 : fuzzScale * height;
         ctx.beginPath();
-        ctx.arc(scale * at, y, radius, 0, tau);
+        ctx.arc(scale * at, y, fuzzScale * radius, 0, tau);
         ctx.fill();
     }
 
@@ -180,15 +182,19 @@ function makeNumberLine(canvas, yPixels, options) {
         ctx.textBaseline = options.facing === 1 ? 'bottom' : 'top';
         const x = at * scale;
         const y = options.facing === 1 ? -dotRadius - 3 : height + dotRadius + 3;
-        ctx.fillText(text, x, y);
+        ctx.fillText(text, x, fuzzScale * y); // XXX right?
     }
 
+    // Convert from canvas-relative pixel coordinates, such as from a mouse event.
+    const s_ = fuzzySize(canvas);
+    const s_scale = s_.width / (options.right - options.left);
     function valueFromX(x) {
-        return x / scale + options.left;
+        return x / s_scale + options.left;
     }
 
     return {
         drawCursor,
+        fuzz: fuzzScale,
         scale,
         show,
         valueFromX,
@@ -196,16 +202,11 @@ function makeNumberLine(canvas, yPixels, options) {
 }
 
 function makeNumberLineUI(quiver, canvas, options) {
-    options = override({
-        font:   defaultFont,
-        labels: true,
-        left:  -3,
-        right:  6,
-    }, options);
-
+    const fuzzScale = unfuzzCanvas(canvas); // XXX make sure this only happens once
+//    console.log('fuzz', fuzzScale);
     const ctx = canvas.getContext('2d');
-    const bot = makeNumberLine(canvas,  15, override({facing:  1}, options));
-    const top = makeNumberLine(canvas, -55, override({facing: -1}, options));
+    const bot = makeNumberLine(canvas,  15, override({facing:  1}, options), fuzzScale);
+    const top = makeNumberLine(canvas, -55, override({facing: -1}, options), fuzzScale);
 
     const selection = [];
 
@@ -226,8 +227,8 @@ function makeNumberLineUI(quiver, canvas, options) {
         },
     };
 
-    function onClick(xy) {
-        const value = bot.valueFromX(xy.x);
+    function onClick(x) {
+        const value = bot.valueFromX(x);
         const choice = pickTarget(value, quiver.getArrows());
         if (choice !== null) {
             toggleSelection(choice);
@@ -265,9 +266,10 @@ function makeNumberLineUI(quiver, canvas, options) {
     function chooseHand(xy) {
         const at = bot.valueFromX(xy.x);
         const target = pickTarget(at, quiver.getFreeArrows());
+//        console.log('target', target, 'xy ' + xy.x + ',' + xy.y, 'fuzz ' + fuzzScale, 'height/2 ' + (canvas.height/2));
         if (target !== null) {
             return makeMoverHand(target, quiver, top);
-        } else if (xy.y < canvas.height/2) { // XXX hack
+        } else if (fuzzScale * xy.y < canvas.height/2) { // XXX hack
             return makeAddHand(show, perform);
         } else {
             return makeMultiplyHand(show, perform);
@@ -301,8 +303,8 @@ function makeNumberLineUI(quiver, canvas, options) {
         },
         onMove: xy => {
             if (handStartedAt === undefined) return;
-            strayed = strayed || maxClickDistance < distance(handStartedAt, xy);
-            hand.moveFromStart(sub(xy, handStartedAt));
+            strayed = strayed || fuzzScale * maxClickDistance < distance(handStartedAt, xy);
+            hand.moveFromStart(fuzzScale * (xy.x - handStartedAt.x));
             hand.onMove();
             show();
         },
@@ -311,7 +313,7 @@ function makeNumberLineUI(quiver, canvas, options) {
             if (strayed) {
                 hand.onEnd();
             } else {
-                onClick(handStartedAt); // XXX or take from where it ends?
+                onClick(handStartedAt.x); // XXX or take from where it ends?
             }
             hand = emptyHand;
             handStartedAt = undefined;
@@ -326,8 +328,8 @@ function makeNumberLineUI(quiver, canvas, options) {
 
 function makeMoverHand(arrow, quiver, ruler) {
     const startAt = arrow.at;
-    function moveFromStart(offset) {
-        arrow.at = startAt + offset.x / ruler.scale;
+    function moveFromStart(dx) {
+        arrow.at = startAt + dx / ruler.scale;
     }
     function onMove() {
         quiver.onMove();
@@ -346,8 +348,8 @@ function makeMoverHand(arrow, quiver, ruler) {
 
 function makeAddHand(show, perform) {
     let adding = 0;
-    function moveFromStart(offset) {
-        adding = offset.x;
+    function moveFromStart(dx) {
+        adding = dx;
     }
     function onEnd() {
         perform(addOp, adding);
@@ -367,8 +369,8 @@ function makeAddHand(show, perform) {
 
 function makeMultiplyHand(show, perform) {
     let xOffset = 0;
-    function moveFromStart(offset) {
-        xOffset = offset.x;
+    function moveFromStart(dx) {
+        xOffset = dx;
     }
     function onEnd() {
         perform(mulOp, xOffset);

@@ -40,7 +40,10 @@ function unfuzzCanvas(canvas) {
         canvas.style.height = canvas.height + 'px';
         canvas.width  *= ratio;
         canvas.height *= ratio;
-        if (0) ctx.scale(ratio, ratio);
+        if (0) ctx.scale(ratio, ratio); // XXX I think it'd be cleaner
+                                        // to enable this; but also
+                                        // store the visible size
+                                        // somewhere
     }
     return ratio;
 }

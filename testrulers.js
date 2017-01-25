@@ -5,6 +5,7 @@ const R = mathtoys.ruler;
 let quiver;                     // for debug
 
 function onLoad() {
+    canvas.width = window.innerWidth - 80;
     quiver = R.makeQuiver();
     return tempTest();
 }
