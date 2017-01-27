@@ -242,6 +242,8 @@ function makeSheet(canvas, options) {
                         realSpan: 8},
                        options);
 
+    const operatorFont = '' + (24 * fuzzScale) + 'pt Georgia'; // XXX start from options.font
+
     const ctx    = canvas.getContext('2d');
     const width  = canvas.width;   // N.B. it's best if these are even
     const height = canvas.height;
@@ -302,6 +304,16 @@ function makeSheet(canvas, options) {
         ctx.save();
         ctx.scale(1, -1); // Back into left-handed coordinates so the text isn't flipped
         ctx.fillText(text, x, -y);
+        ctx.restore();
+    }
+
+    function drawOperator(at, text) {
+        ctx.save();
+        ctx.fillStyle = 'red';
+        ctx.font = operatorFont
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        drawText(at, text, {x: 0, y: 0});
         ctx.restore();
     }
 
@@ -378,6 +390,7 @@ function makeSheet(canvas, options) {
         drawCross,
         drawGrid,
         drawLine,
+        drawOperator,
         drawSpiral,
         drawText,
         fuzz: fuzzScale,
@@ -389,10 +402,12 @@ function makeSheet(canvas, options) {
 
 const emptyHand = {
     isDirty: () => false,
+    isEmpty: () => true,
     moveFromStart: noOp,
     onMove: noOp,
     onEnd: () => emptyHand,
     dragGrid: noOp,
+    getSelectionStyle: noOp,
     show: noOp,
     ughXXX: () => false,
 };
@@ -454,7 +469,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
         options.preshow();
 
         if (hand.ughXXX()) ctx.restore();
-        ctx.fillStyle = 'red';
+        ctx.fillStyle = hand.getSelectionStyle(findAnyOperand) || 'red';
         selection.forEach(showArrowSelected);
         if (!hand.ughXXX()) ctx.restore();
 
@@ -484,6 +499,12 @@ function makeSheetUI(quiver, canvas, options, controls) {
             merged.at = arrow.at;
             merged.op.showProvenance(merged, sheet);
         }
+        if (0 < selection.length && hand.isEmpty()
+           && (arrow.label === '0' || arrow.label === '1')) { // XXX hack
+            const sign = arrow.label === '0' ? '+' : '\u00D7'; // (multiplication sign)
+            sheet.drawOperator(arrow.at, sign);
+            return;
+        } 
         showArrow(arrow);
     }
 
@@ -499,6 +520,18 @@ function makeSheetUI(quiver, canvas, options, controls) {
         sheet.drawText(arrow.at, arrow.label, arrow.op.labelOffset);
     }
 
+    function findAnyOperand(pointer) {
+        // XXX really duplicate code
+        const radius = 0.1; // XXX maxMergeDistance / sheet.scale
+        const arrows = quiver.getArrows();
+        for (let i = 0; i < arrows.length; ++i) {
+            const at = arrows[i].at;
+            if (cnum.distance(at, pointer) < radius) {
+                return true;
+            }
+        }
+    }
+
     function highlightAnyOperand(pointer) {
         // XXX duplicate code for finding?
         const radius = 0.1; // XXX maxMergeDistance / sheet.scale
@@ -506,7 +539,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
         for (let i = 0; i < arrows.length; ++i) {
             const at = arrows[i].at;
             if (cnum.distance(at, pointer) < radius) {
-                sheet.ctx.fillStyle = 'green'; // or something
+                sheet.ctx.fillStyle = 'purple'; // or something
                 sheet.drawDot(at, 3 * dotRadius); // XXX or something
                 return;
             }
@@ -745,10 +778,12 @@ function makeMoverHand(arrow, quiver) {
     }
     return {
         isDirty: () => false,
+        isEmpty: () => false,
         moveFromStart,
         onMove,
         onEnd,
         dragGrid: noOp,
+        getSelectionStyle: noOp,
         show: noOp,
         ughXXX: () => false,
     };
@@ -766,10 +801,12 @@ function makeSnapDragBackHand(oldHand, path) {
     }
     return {
         isDirty: () => 0 < step,
+        isEmpty: () => 0 === step,
         moveFromStart: noOp,
         onMove: noOp,
         onEnd: () => emptyHand,
         dragGrid,
+        getSelectionStyle: noOp,
         show: noOp, // oldHand.show,
         ughXXX: () => 0 < step,
     };
@@ -791,12 +828,14 @@ function makeAddHand(sheet, selection, perform, highlightAnyOperand) {
     }
     const me = {
         isDirty: () => false,
+        isEmpty: () => false,
         moveFromStart,
         onMove: noOp,
         onEnd,
         dragGrid() {
             sheet.translate(adding);
         },
+        getSelectionStyle: (findAnyOperand) => findAnyOperand(adding) ? 'purple' : 'red',
         show() {
             sheet.ctx.strokeStyle = 'magenta';
             sheet.drawLine(cnum.zero, adding);
@@ -827,12 +866,14 @@ function makeMultiplyHand(sheet, selection, perform, highlightAnyOperand) {
     }
     const me = {
         isDirty() { return false; },
+        isEmpty: () => false,
         moveFromStart,
         onMove: noOp,
         onEnd,
         dragGrid() {
             sheet.ctx.transform(multiplying.re, multiplying.im, -multiplying.im, multiplying.re, 0, 0);
         },
+        getSelectionStyle: (findAnyOperand) => findAnyOperand(multiplying) ? 'purple' : 'red',
         show() {
             sheet.ctx.strokeStyle = 'green';
             sheet.drawSpiral(cnum.one, multiplying, multiplying);
