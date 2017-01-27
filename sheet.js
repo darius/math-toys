@@ -499,6 +499,20 @@ function makeSheetUI(quiver, canvas, options, controls) {
         sheet.drawText(arrow.at, arrow.label, arrow.op.labelOffset);
     }
 
+    function highlightAnyOperand(pointer) {
+        // XXX duplicate code for finding?
+        const radius = 0.1; // XXX maxMergeDistance / sheet.scale
+        const arrows = quiver.getArrows();
+        for (let i = 0; i < arrows.length; ++i) {
+            const at = arrows[i].at;
+            if (cnum.distance(at, pointer) < radius) {
+                sheet.ctx.fillStyle = 'green'; // or something
+                sheet.drawDot(at, 3 * dotRadius); // XXX or something
+                return;
+            }
+        }
+    }
+
     function onStateChange() {
     }
 
@@ -570,9 +584,9 @@ function makeSheetUI(quiver, canvas, options, controls) {
         if (target !== null) {
             return makeMoverHand(target, quiver);
         } else if (options.adding && isCandidatePick(at, zeroArrow)) {
-            return makeAddHand(sheet, selection, perform);
+            return makeAddHand(sheet, selection, perform, highlightAnyOperand);
         } else if (options.multiplying && isCandidatePick(at, oneArrow)) {
-            return makeMultiplyHand(sheet, selection, perform);
+            return makeMultiplyHand(sheet, selection, perform, highlightAnyOperand);
         } else {
             return emptyHand;
         }
@@ -762,7 +776,7 @@ function makeSnapDragBackHand(oldHand, path) {
 }
 
 
-function makeAddHand(sheet, selection, perform) {
+function makeAddHand(sheet, selection, perform, highlightAnyOperand) {
     let adding = cnum.zero;
     function moveFromStart(offset) {
         adding = offset;
@@ -789,13 +803,14 @@ function makeAddHand(sheet, selection, perform) {
             selection.forEach(arrow => {
                 sheet.drawLine(arrow.at, cnum.add(arrow.at, adding));
             });
+            highlightAnyOperand(adding);
         },
         ughXXX: () => false,
     };
     return me;
 }
 
-function makeMultiplyHand(sheet, selection, perform) {
+function makeMultiplyHand(sheet, selection, perform, highlightAnyOperand) {
     let multiplying = cnum.one;
     function moveFromStart(offset) {
         multiplying = cnum.add(cnum.one, offset);
@@ -824,6 +839,7 @@ function makeMultiplyHand(sheet, selection, perform) {
             selection.forEach(arrow => {
                 sheet.drawSpiral(arrow.at, multiplying, cnum.mul(arrow.at, multiplying));
             });
+            highlightAnyOperand(multiplying);
         },
         ughXXX: () => false,
     };
