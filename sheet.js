@@ -257,7 +257,8 @@ function makeSheet(canvas, options) {
     ctx.translate(right, top);
     ctx.scale(1, -1);
 
-    // Convert from canvas-relative pixel coordinates, such as from a mouse event.
+    // Convert from canvas-relative pixel coordinates, such as from a
+    // mouse event.
     const s_ = fuzzySize(canvas);
     const s_right  = s_.width/2;
     const s_top    = s_.height/2;
@@ -892,7 +893,8 @@ const addOp = {
     labelOffset: {x: 6, y: -14},
     label(arrow) {
         if (!(isNaN(arrow.arg1.label) || isNaN(arrow.arg2.label))) {
-            return '' + (parseFloat(arrow.arg1.label) + parseFloat(arrow.arg2.label));
+            return '' + (parseFloat(arrow.arg1.label)
+                         + parseFloat(arrow.arg2.label));
         } else if (arrow.arg1 === arrow.arg2) {
             return '2' + parenthesize(arrow.arg1.label);
         } else {
@@ -919,7 +921,8 @@ const mulOp = {
     labelOffset: {x: 6, y: -14},
     label(arrow) {
         if (!(isNaN(arrow.arg1.label) || isNaN(arrow.arg2.label))) {
-            return '' + (parseFloat(arrow.arg1.label) * parseFloat(arrow.arg2.label));
+            return '' + (parseFloat(arrow.arg1.label)
+                         * parseFloat(arrow.arg2.label));
         } else if (arrow.arg1 === arrow.arg2) {
             return parenthesize(arrow.arg1.label) + '^2';
         } else {
