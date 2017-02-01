@@ -891,7 +891,9 @@ const addOp = {
     color: 'black',
     labelOffset: {x: 6, y: -14},
     label(arrow) {
-        if (arrow.arg1 === arrow.arg2) {
+        if (!(isNaN(arrow.arg1.label) || isNaN(arrow.arg2.label))) {
+            return '' + (parseFloat(arrow.arg1.label) + parseFloat(arrow.arg2.label));
+        } else if (arrow.arg1 === arrow.arg2) {
             return '2' + parenthesize(arrow.arg1.label);
         } else {
             return infixLabel(arrow.arg1, '+', arrow.arg2);
@@ -916,7 +918,9 @@ const mulOp = {
     color: 'black',
     labelOffset: {x: 6, y: -14},
     label(arrow) {
-        if (arrow.arg1 === arrow.arg2) {
+        if (!(isNaN(arrow.arg1.label) || isNaN(arrow.arg2.label))) {
+            return '' + (parseFloat(arrow.arg1.label) * parseFloat(arrow.arg2.label));
+        } else if (arrow.arg1 === arrow.arg2) {
             return parenthesize(arrow.arg1.label) + '^2';
         } else {
             return infixLabel(arrow.arg1, '', arrow.arg2);
