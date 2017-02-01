@@ -448,7 +448,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
                 }
             } else {
                 requestAnimationFrame(redisplay);
-                quiver.satisfy(500);
+                quiver.satisfy(2000);
                 dirty = true;
             }
         } else if (hand.isDirty()) {
