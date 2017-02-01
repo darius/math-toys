@@ -892,13 +892,21 @@ const addOp = {
     color: 'black',
     labelOffset: {x: 6, y: -14},
     label(arrow) {
-        if (!(isNaN(arrow.arg1.label) || isNaN(arrow.arg2.label))) {
-            return '' + (parseFloat(arrow.arg1.label)
-                         + parseFloat(arrow.arg2.label));
-        } else if (arrow.arg1 === arrow.arg2) {
-            return '2' + parenthesize(arrow.arg1.label);
+        const a1 = arrow.arg1;
+        const a2 = arrow.arg2;
+        if (!(isNaN(a1.label) || isNaN(a2.label))) {
+            return '' + (parseFloat(a1.label) + parseFloat(a2.label));
+        } else if (a1 === a2) {
+            arrow.labelFrom = {coeff: 2, base: a1};
+            return '2' + parenthesize(a1.label);
+        } else if ((a1.labelFrom
+                    && a1.labelFrom.coeff !== void 0
+                    && (a2 === a1.labelFrom.base))) {
+            const c = a1.labelFrom.coeff + 1;
+            arrow.labelFrom = {coeff: c, base: a1.labelFrom.base};
+            return '' + c + parenthesize(a2.label);
         } else {
-            return infixLabel(arrow.arg1, '+', arrow.arg2);
+            return infixLabel(a1, '+', a2);
         }
     },
     recompute(arrow) {
@@ -920,13 +928,25 @@ const mulOp = {
     color: 'black',
     labelOffset: {x: 6, y: -14},
     label(arrow) {
-        if (!(isNaN(arrow.arg1.label) || isNaN(arrow.arg2.label))) {
-            return '' + (parseFloat(arrow.arg1.label)
-                         * parseFloat(arrow.arg2.label));
-        } else if (arrow.arg1 === arrow.arg2) {
-            return parenthesize(arrow.arg1.label) + '^2';
+        const a1 = arrow.arg1;
+        const a2 = arrow.arg2;
+        if (!(isNaN(a1.label) || isNaN(a2.label))) {
+            return '' + (parseFloat(a1.label) * parseFloat(a2.label));
+        } else if (!isNaN(a1.label)) {
+            const c = parseFloat(a1.label);
+            arrow.labelFrom = {coeff: c, base: a1};
+            return '' + c + parenthesize(a2.label);
+        } else if (a1 === a2) {
+            arrow.labelFrom = {power: 2, base: a1};
+            return parenthesize(a1.label) + '^2';
+        } else if ((a1.labelFrom
+                    && a1.labelFrom.power !== void 0
+                    && (a2 === a1.labelFrom.base))) {
+            const power = a1.labelFrom.power + 1;
+            arrow.labelFrom = {power: power, base: a1.labelFrom.base};
+            return parenthesize(a2.label) + '^' + power;
         } else {
-            return infixLabel(arrow.arg1, '', arrow.arg2);
+            return infixLabel(a1, '', a2);
         }
     },
     recompute(arrow) {
