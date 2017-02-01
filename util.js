@@ -22,6 +22,24 @@ const override =
     });
 
 
+// This is supposed to turn a number-string like '2' into a Unicode
+// superscript suitable (in that case) to denote squaring. But afaict
+// there are no fonts I can depend on having that support these
+// superscripts. So I'm currently not using this; it sure would be
+// convenient if I could.
+function toSuperscript(str) {
+    let s = '';
+    for (let i = 0; i < str.length; ++i) {
+        let c = str.charCodeAt(i);
+        if (48 <= c && c < 58) c += 0x2070 - 48;
+        else if (str[i] === '-') c = 0x207b;
+        // TODO error on other characters?
+        s += String.fromCharCode(c);
+    }
+    return s;
+}
+
+
 // TODO wrap in own module, I guess:
 
 function unfuzzCanvas(canvas) {

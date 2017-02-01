@@ -234,15 +234,17 @@ function makeQuiver() {
     return quiver;
 }
 
+const defaultFont = 'Georgia';
+
 // A sheet is a canvas displaying the complex-number plane.
 function makeSheet(canvas, options) {
     const fuzzScale = unfuzzCanvas(canvas); // XXX make sure this only happens once
     options = override({center:   cnum.zero,
-                        font:     '' + (12 * fuzzScale) + 'pt Georgia',  // XXX what if noninteger?
+                        font:     '' + (12 * fuzzScale) + 'pt ' + defaultFont,  // XXX what if noninteger?
                         realSpan: 8},
                        options);
 
-    const operatorFont = '' + (24 * fuzzScale) + 'pt Georgia'; // XXX start from options.font
+    const operatorFont = '' + (24 * fuzzScale) + 'pt ' + defaultFont; // XXX start from options.font
 
     const ctx    = canvas.getContext('2d');
     const width  = canvas.width;   // N.B. it's best if these are even
