@@ -14,6 +14,13 @@ function onLoad() {
     quiver = sh.makeQuiver();
     ui = sh.makeSheetUI(quiver, canvas, {}, {});
     ui.show();
+
+    quiver.addWatcher(onChange);
+    function onChange(event) {
+        if (event.tag !== 'add') {
+            update();
+        }
+    }
 }
 
 function onPin() {
@@ -26,6 +33,14 @@ function onMerge() {
     ui.show();
 }
 
+function onShowField() {
+    const input = quiver.getIndependentVariable();
+    const selection = ui.getSelection();
+    if (input !== null && 0 < selection.length) {
+        addSheet(input, selection[0]);
+    }
+}
+
 function onRename() {
     const arrow = quiver.findLabel(renameFrom.value);
     const newLabel = renameTo.value.trim();
@@ -34,6 +49,69 @@ function onRename() {
         ui.show();
     }
 }
+
+
+// Vector field stuff:
+
+let zVar;
+
+// Pairs of [arrow, sheet].
+const pairs = [];
+
+function addSheet(domainArrow, rangeArrow) {
+    zVar = domainArrow; // XXX
+    const newCanvas = document.createElement('canvas');
+    const size = {width: 500, height: 500}; // XXX
+    newCanvas.width = size.width;
+    newCanvas.height = size.height;
+    const sheet = sh.makeSheet(newCanvas);
+    pairs.push([rangeArrow, sheet]); // XXX
+    document.getElementById('sheets').appendChild(newCanvas);
+    document.getElementById('sheets').appendChild(document.createTextNode(' '));
+    update();
+}
+
+const pendingUpdates = [];
+
+function update() {
+    // Schedule pending updates round-robin style, to avoid starving
+    // the updating of the later elements of pairs.
+    pairs.filter(complement(isPending)).forEach(p => {
+        pendingUpdates.push(p);
+    });
+    cancelAnimationFrame(doUpdates);
+    requestAnimationFrame(doUpdates);
+}
+
+function isPending([arrow, _]) {
+    return pendingUpdates.some(([pendingArrow, _]) => arrow === pendingArrow);
+}
+
+function complement(predicate) {
+    return x => !predicate(x);
+}
+
+function doUpdates() {
+    if (0 < pendingUpdates.length) {
+        const startTime = Date.now();
+        const pair = pendingUpdates[0];
+        doUpdate(pair);
+        pendingUpdates.splice(0, 1);
+        requestAnimationFrame(doUpdates);
+        if (0) console.log(Date.now() - startTime, pair[0].label);
+    }
+}
+
+function doUpdate([arrow, sheet]) {
+    const f = quiver.asFunction(zVar, arrow);
+    sheet.clear();
+    sheet.drawGrid();
+    sheet.ctx.strokeStyle = 'black';
+    sh.drawVectorField(sheet, f, 0.05, 15);
+}
+
+
+// unused now:
 
 function tempTest() {
     const sheet = sh.makeSheet(canvas);

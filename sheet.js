@@ -48,6 +48,14 @@ function makeQuiver() {
         return null;
     }
 
+    // ad hoc for the interim vector-fields UI:
+    function getIndependentVariable() {
+        for (let i = 0; i < arrows.length; ++i) {
+            if (arrows[i].op === variableOp) return arrows[i];
+        }
+        return null;
+    }
+
     function pinVariables(pinOn) {
         for (const arrow of arrows) {
             if (arrow.op === variableOp && !arrow.stayPinned) {
@@ -213,7 +221,7 @@ function makeQuiver() {
         // Notify
         // TODO make this a new event type?
     }
-
+    
     const quiver = {
         add,
         addWatcher,
@@ -223,6 +231,7 @@ function makeQuiver() {
         isEmpty,
         getArrows,
         getFreeArrows,
+        getIndependentVariable,
         mergeCoincidences,
         nameNextArrow,
         onMove,
@@ -651,7 +660,8 @@ function makeSheetUI(quiver, canvas, options, controls) {
             heyImDirty();
         },
         onEnd() {
-            assert(handStartedAt !== undefined);
+            if (handStartedAt === undefined) return;
+            // assert(handStartedAt !== undefined);
             hand = hand.onEnd();
             if (!strayed) {
                 onClick(handStartedAt); // XXX or take from where it ends?
@@ -667,6 +677,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
     }
 
     return {
+        getSelection: () => selection,
         merge,
         pinSelection,
         sheet,
@@ -712,6 +723,7 @@ function addPointerListener(panel, element, listener) {
     const onMousedown = pointing.leftButtonOnly(pointing.mouseHandler(element, listener.onStart));
     panel.addEventListener('mousedown', event => {
         if (event.target !== element) return false;
+        event.preventDefault();     // to disable mouse events
         return onMousedown(event);
     });
     panel.addEventListener('mousemove', pointing.mouseHandler(element, listener.onMove));
