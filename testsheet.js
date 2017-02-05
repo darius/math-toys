@@ -6,8 +6,15 @@ const sh = mathtoys.sheet;
 let quiver, ui;                     // global/mutable for debugging
 
 function onLoad() {
-    const side = Math.min(window.innerWidth - 100,
-                          window.innerHeight - 100);       
+    // Try to fill the window, but leave some space for controls, and
+    // hit a size that makes the grid lines occupy one pixel exactly.
+    // XXX this is a poor place for the latter calculation -- should instead
+    //  do a similar one in makeSheet, using all of the canvas but adjusting
+    //  the grid size.
+    let sideLimit = Math.min(window.innerWidth - 20,
+                             window.innerHeight - 100);
+    const gridLines = 8*5;
+    const side = Math.floor(sideLimit / gridLines) * gridLines;
     canvas.width = side;
     canvas.height = side;
 
