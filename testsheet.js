@@ -67,13 +67,29 @@ const pairs = [];
 
 function addSheet(domainArrow, rangeArrow) {
     zVar = domainArrow; // XXX
+
+    const newDiv = document.createElement('div');
+    newDiv.className = 'workspace';
+
     const newCanvas = document.createElement('canvas');
     const size = {width: 500, height: 500}; // XXX
     newCanvas.width = size.width;
     newCanvas.height = size.height;
     const sheet = sh.makeSheet(newCanvas);
     pairs.push([rangeArrow, sheet]); // XXX
-    document.getElementById('sheets').appendChild(newCanvas);
+    newDiv.appendChild(newCanvas);
+
+    newDiv.appendChild(document.createElement('br'));
+    const deleteButton = document.createElement('input');
+    deleteButton.type = 'button';
+    deleteButton.value = 'Delete';
+    // XXX needs a click handler
+    newDiv.appendChild(deleteButton);
+    const label = ('   ' + domainArrow.label + ' \u2192 ' // (right arrow char)
+                   + rangeArrow.label);
+    newDiv.appendChild(document.createTextNode(label));
+
+    document.getElementById('sheets').appendChild(newDiv);
     document.getElementById('sheets').appendChild(document.createTextNode(' '));
     update();
 }
