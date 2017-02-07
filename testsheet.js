@@ -75,15 +75,15 @@ function addSheet(domainArrow, rangeArrow) {
     const size = {width: 500, height: 500}; // XXX
     newCanvas.width = size.width;
     newCanvas.height = size.height;
-    const sheet = sh.makeSheet(newCanvas);
-    pairs.push([rangeArrow, sheet]); // XXX
+    const newSheet = sh.makeSheet(newCanvas);
+    pairs.push([rangeArrow, newSheet]); // XXX
     newDiv.appendChild(newCanvas);
 
     newDiv.appendChild(document.createElement('br'));
     const deleteButton = document.createElement('input');
     deleteButton.type = 'button';
     deleteButton.value = 'Delete';
-    // XXX needs a click handler
+    deleteButton.addEventListener('click', deleteSheet);
     newDiv.appendChild(deleteButton);
     const label = ('   ' + domainArrow.label + ' \u2192 ' // (right arrow char)
                    + rangeArrow.label);
@@ -92,6 +92,18 @@ function addSheet(domainArrow, rangeArrow) {
     document.getElementById('sheets').appendChild(newDiv);
     document.getElementById('sheets').appendChild(document.createTextNode(' '));
     update();
+
+    function deleteSheet() {
+        deleteFromArray(pairs,          ([arrow, sheet]) => sheet === newSheet);
+        deleteFromArray(pendingUpdates, ([arrow, sheet]) => sheet === newSheet);
+        newDiv.remove();
+    }
+}
+
+function deleteFromArray(array, isUnwanted) {
+    for (let i = array.length - 1; 0 <= i; --i) {
+        if (isUnwanted(array[i])) array.splice(i, 1);
+    }
 }
 
 const pendingUpdates = [];
