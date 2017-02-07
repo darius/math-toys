@@ -6,20 +6,20 @@
 </head>
 
 <body bgcolor="#fff" onload="onLoad()">
-  <div id="sheets" class="workspace">
-    <canvas id="canvas" width="720" height="720"
-            style="background-color: #eee"
-            >
-    </canvas>
+  <div id="sheets">
+    <div class="workspace">
+      <canvas id="canvas" width="720" height="720">
+      </canvas>
+      <br>
+      <input type="button" id="pinButton" value="Pin/unpin points" onclick="onPin()">
+      <input disabled type="button" id="mergeButton" value="Merge points" onclick="onMerge()">
+      <input type="button" id="fieldButton" value="Show field" onclick="onShowField()">
+      <br>
+      Rename <input type="text" id="renameFrom" size="5">
+      to <input type="text" id="renameTo" size="5">
+      <input type="button" value="Rename" onclick="onRename()">
+    </div>
   </div>
-  <br>
-  <input type="button" id="pinButton" value="Pin/unpin points" onclick="onPin()">
-  <input disabled type="button" id="mergeButton" value="Merge points" onclick="onMerge()">
-  <input type="button" id="fieldButton" value="Show field" onclick="onShowField()">
-  <br>
-  Rename <input type="text" id="renameFrom" size="5">
-  to <input type="text" id="renameTo" size="5">
-  <input type="button" value="Rename" onclick="onRename()">
 
   <script type="text/javascript">
     'use strict';
