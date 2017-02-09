@@ -150,7 +150,6 @@ function addSheet(group, domainArrow, rangeArrow) {
     newDiv.appendChild(document.createTextNode(label));
 
     group.appendChild(newDiv);
-    group.appendChild(document.createTextNode(' '));
     update();
 
     function deleteSheet() {

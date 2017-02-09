@@ -5,6 +5,7 @@
 .fieldgroup {
     display: flex;
     flex-direction: column;
+#    justifyContent: space-between;
 }
 
 .mainsheet {
@@ -15,7 +16,7 @@
 }
 
 .fieldsheet {
-
+    margin: 10px;
 }
 
 canvas {
