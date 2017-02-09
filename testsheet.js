@@ -6,7 +6,10 @@ const sh = mathtoys.sheet;
 let quiver, ui;                     // global/mutable for debugging
 
 function onLoad() {
-    document.getElementById('theSheets').appendChild(makeSheetGroup());
+    quiver = sh.makeQuiver();
+    const sheetGroup = makeSheetGroup(quiver);
+    document.getElementById('theSheets').appendChild(sheetGroup.element);
+    const canvas = sheetGroup.canvas;
 
     // Try to fill the window, but leave some space for controls, and
     // hit a size that makes the grid lines occupy one pixel exactly.
@@ -20,36 +23,31 @@ function onLoad() {
     canvas.width = side;
     canvas.height = side;
 
-    quiver = sh.makeQuiver();
     ui = sh.makeSheetUI(quiver, canvas, {}, {});
     ui.show();
 
-    quiver.addWatcher(onChange);
-    function onChange(event) {
-        if (event.tag !== 'add') {
-            update();
-        }
-    }
+    quiver.addWatcher(event => {
+        if (event.tag !== 'add') update();
+    });
 }
 
-var canvas;                     // XXX shouldn't have to be global
 var mergeButton;                // XXX ditto
 var renameFrom;                 // XXX ditto
 
-function makeSheetGroup() {
+function makeSheetGroup(quiver) {
     const group = document.createElement('div');
     group.className = 'sheetgroup';
 
     const mainSheet = document.createElement('div');
     mainSheet.className = 'mainsheet';
 
-    canvas = document.createElement('canvas');
+    const canvas = document.createElement('canvas');
     // TODO .disabled = true
-    const pinButton   = makeButton("Pin/unpin points", onPin);
+    const pinButton = makeButton("Pin/unpin points", onPin);
     mergeButton = makeButton("Merge points", onMerge);
     mergeButton.disabled = true;
-    renameFrom  = makeTextInput(5);
-    const renameTo    = makeTextInput(5);
+    renameFrom = makeTextInput(5);
+    const renameTo = makeTextInput(5);
 
     mainSheet.appendChild(canvas);
     mainSheet.appendChild(document.createElement('br'));
@@ -68,7 +66,10 @@ function makeSheetGroup() {
 
     group.appendChild(mainSheet);
     group.appendChild(fieldGroup);
-    return group;
+    return {
+        element: group,
+        canvas: canvas,
+    };
 
     function onPin() {
         ui.pinSelection();
