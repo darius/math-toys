@@ -1,8 +1,21 @@
-div.workspace {
+.sheetgroup {
+    display: flex;
+}
+
+.fieldgroup {
+    display: flex;
+    flex-direction: column;
+}
+
+.mainsheet {
     display: inline-block;
     vertical-align: top;
 #        border-style: solid;
 #        border-width: 1px;
+}
+
+.fieldsheet {
+
 }
 
 canvas {

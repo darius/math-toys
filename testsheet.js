@@ -6,6 +6,8 @@ const sh = mathtoys.sheet;
 let quiver, ui;                     // global/mutable for debugging
 
 function onLoad() {
+    document.getElementById('theSheets').appendChild(makeSheetGroup());
+
     // Try to fill the window, but leave some space for controls, and
     // hit a size that makes the grid lines occupy one pixel exactly.
     // XXX this is a poor place for the latter calculation -- should instead
@@ -30,31 +32,85 @@ function onLoad() {
     }
 }
 
-function onPin() {
-    ui.pinSelection();
-    ui.show();
-}
+var canvas;                     // XXX shouldn't have to be global
+var mergeButton;                // XXX ditto
+var renameFrom;                 // XXX ditto
 
-function onMerge() {
-    ui.merge();
-    ui.show();
-}
+function makeSheetGroup() {
+    const group = document.createElement('div');
+    group.className = 'sheetgroup';
 
-function onShowField() {
-    const input = quiver.getIndependentVariable();
-    const selection = ui.getSelection();
-    if (input !== null && 0 < selection.length) {
-        addSheet(input, selection[0]);
-    }
-}
+    const mainSheet = document.createElement('div');
+    mainSheet.className = 'mainsheet';
 
-function onRename() {
-    const arrow = quiver.findLabel(renameFrom.value);
-    const newLabel = renameTo.value.trim();
-    if (arrow !== null && newLabel !== '') {
-        arrow.label = newLabel;
+    canvas = document.createElement('canvas');
+    // TODO .disabled = true
+    const pinButton   = makeButton("Pin/unpin points", onPin);
+    mergeButton = makeButton("Merge points", onMerge);
+    mergeButton.disabled = true;
+    renameFrom  = makeTextInput(5);
+    const renameTo    = makeTextInput(5);
+
+    mainSheet.appendChild(canvas);
+    mainSheet.appendChild(document.createElement('br'));
+    mainSheet.appendChild(pinButton);
+    mainSheet.appendChild(mergeButton);
+    mainSheet.appendChild(makeButton("Show field", onShowField));
+    mainSheet.appendChild(document.createElement('br'));
+    mainSheet.appendChild(document.createTextNode("Rename "));
+    mainSheet.appendChild(renameFrom);
+    mainSheet.appendChild(document.createTextNode(" to "));
+    mainSheet.appendChild(renameTo);
+    mainSheet.appendChild(makeButton("Rename", onRename));
+
+    const fieldGroup = document.createElement('div');
+    fieldGroup.className = 'fieldgroup';
+
+    group.appendChild(mainSheet);
+    group.appendChild(fieldGroup);
+    return group;
+
+    function onPin() {
+        ui.pinSelection();
         ui.show();
     }
+
+    function onMerge() {
+        ui.merge();
+        ui.show();
+    }
+
+    function onShowField() {
+        const input = quiver.getIndependentVariable();
+        const selection = ui.getSelection();
+        if (input !== null && 0 < selection.length) {
+            addSheet(fieldGroup, input, selection[0]);
+        }
+    }
+
+    function onRename() {
+        const arrow = quiver.findLabel(renameFrom.value);
+        const newLabel = renameTo.value.trim();
+        if (arrow !== null && newLabel !== '') {
+            arrow.label = newLabel;
+            ui.show();
+        }
+    }
+}
+
+function makeButton(value, onClick) {
+    const button = document.createElement('input');
+    button.type = 'button';
+    button.value = value;
+    if (onClick) button.addEventListener('click', onClick);
+    return button;
+}
+
+function makeTextInput(size) {
+    const element = document.createElement('input');
+    element.type = 'text';
+    element.size = size;
+    return element;
 }
 
 
@@ -65,11 +121,11 @@ let zVar;
 // Pairs of [arrow, sheet].
 const pairs = [];
 
-function addSheet(domainArrow, rangeArrow) {
+function addSheet(group, domainArrow, rangeArrow) {
     zVar = domainArrow; // XXX
 
     const newDiv = document.createElement('div');
-    newDiv.className = 'workspace';
+    newDiv.className = 'fieldsheet';
 
     const newCanvas = document.createElement('canvas');
     const size = {width: 500, height: 500}; // XXX
@@ -89,8 +145,8 @@ function addSheet(domainArrow, rangeArrow) {
                    + rangeArrow.label);
     newDiv.appendChild(document.createTextNode(label));
 
-    document.getElementById('sheets').appendChild(newDiv);
-    document.getElementById('sheets').appendChild(document.createTextNode(' '));
+    group.appendChild(newDiv);
+    group.appendChild(document.createTextNode(' '));
     update();
 
     function deleteSheet() {
@@ -143,28 +199,4 @@ function doUpdate([arrow, sheet]) {
     sheet.drawGrid();
     sheet.ctx.strokeStyle = 'black';
     sh.drawVectorField(sheet, f, 0.05, 15);
-}
-
-
-// unused now:
-
-function tempTest() {
-    const sheet = sh.makeSheet(canvas);
-    sheet.drawGrid();
-    sheet.ctx.lineWidth = 1;
-    sheet.ctx.strokeStyle = 'black';
-    sheet.ctx.fillStyle = 'blue';
-    sheet.drawDot(cnum.one, 3);
-    sheet.drawLine(cnum.one, {re: 2, im: 1});
-    sheet.drawText(cnum.one, '1', {x: -14, y: 10});
-    sheet.drawSpiral(cnum.one, {re: 2, im: 1}, {re: 2, im: 1});
-    console.log(sheet.pointFromXY({x: 400, y: 0}));
-
-    const i = quiver.add({op: sh.constantOp, at: {re: 0, im: 1}});
-    sheet.drawDot(i.at, sh.dotRadius);
-    sheet.drawText(i.at, i.label, i.op.labelOffset);
-
-    const v = quiver.add({op: sh.variableOp, at: {re: 2.1, im: -1}});
-    sheet.drawDot(v.at, sh.dotRadius);
-    sheet.drawText(v.at, v.label, v.op.labelOffset);
 }
