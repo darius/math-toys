@@ -6,11 +6,6 @@ const sh = mathtoys.sheet;
 let quiver, ui;                     // global/mutable for debugging
 
 function onLoad() {
-    quiver = sh.makeQuiver();
-    const sheetGroup = makeSheetGroup(quiver);
-    document.getElementById('theSheets').appendChild(sheetGroup.element);
-    const canvas = sheetGroup.canvas;
-
     // Try to fill the window, but leave some space for controls, and
     // hit a size that makes the grid lines occupy one pixel exactly.
     // XXX this is a poor place for the latter calculation -- should instead
@@ -20,21 +15,22 @@ function onLoad() {
                              window.innerHeight - 100);
     const gridLines = 8*5;
     const side = Math.floor(sideLimit / gridLines) * gridLines;
-    canvas.width = side;
-    canvas.height = side;
 
-    ui = sh.makeSheetUI(quiver, canvas, {}, {});
-    ui.show();
+    quiver = sh.makeQuiver();
+
+    const toy = makeSheetGroup({side, quiver, options: {}, controls: {}});
+    document.getElementById('theSheets').appendChild(toy.element);
+    ui = toy.ui;
 
     quiver.addWatcher(event => {
         if (event.tag !== 'add') update();
     });
 }
 
-var mergeButton;                // XXX ditto
+var mergeButton;                // XXX shouldn't be global
 var renameFrom;                 // XXX ditto
 
-function makeSheetGroup(quiver) {
+function makeSheetGroup({side, quiver, options, controls}) {
     const group = document.createElement('div');
     group.className = 'sheetgroup';
 
@@ -42,6 +38,12 @@ function makeSheetGroup(quiver) {
     mainSheet.className = 'mainsheet';
 
     const canvas = document.createElement('canvas');
+    canvas.width = side;
+    canvas.height = side;
+
+    const ui = sh.makeSheetUI(quiver, canvas, options, controls);
+    ui.show();
+
     // TODO .disabled = true
     const pinButton = makeButton("Pin/unpin points", onPin);
     mergeButton = makeButton("Merge points", onMerge);
@@ -68,7 +70,8 @@ function makeSheetGroup(quiver) {
     group.appendChild(fieldGroup);
     return {
         element: group,
-        canvas: canvas,
+        canvas,
+        ui,
     };
 
     function onPin() {
@@ -117,13 +120,13 @@ function makeTextInput(size) {
 
 // Vector field stuff:
 
-let zVar;
+let zVar;                       // XXX shouldn't be global
 
 // Pairs of [arrow, sheet].
 const pairs = [];
 
 function addSheet(group, domainArrow, rangeArrow) {
-    zVar = domainArrow; // XXX
+    zVar = domainArrow;
 
     const newDiv = document.createElement('div');
     newDiv.className = 'fieldsheet';
