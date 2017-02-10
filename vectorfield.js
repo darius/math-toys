@@ -91,5 +91,5 @@ function doUpdate([arrow, sheet]) {
     sheet.clear();
     sheet.drawGrid();
     sheet.ctx.strokeStyle = 'black';
-    sh.drawVectorField(sheet, f, 0.05, 15);
+    sh.drawVectorField(sheet, zVar, f, 0.05, 15);
 }

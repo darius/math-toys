@@ -1031,9 +1031,13 @@ function computeSpiralArc(u, v, uv) {
             uv];
 }
 
-function drawVectorField(sheet, f, vectorScale, spacing) {
+function drawVectorField(sheet, zVar, f, vectorScale, spacing) {
     const ctx = sheet.ctx;
     ctx.save();
+
+    ctx.fillStyle = 'green';
+    sheet.drawDot(zVar.at, 3);
+
     ctx.fillStyle = 'red';
     ctx.strokeStyle = 'black';
     ctx.lineWidth = 1;
@@ -1052,6 +1056,7 @@ function drawVectorField(sheet, f, vectorScale, spacing) {
             drawStreamline(sheet, z, f, vectorScale);
         }
     }
+
     ctx.restore();
 }
 
