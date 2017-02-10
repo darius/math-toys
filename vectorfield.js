@@ -18,7 +18,7 @@ function onLoad() {
     sheet = sh.makeSheet(canvas2);
     sheet.drawGrid();
     sheet.ctx.strokeStyle = 'black';
-    sh.drawVectorField(sheet, z => z, 0.10, 15);
+    sh.drawVectorField(sheet, zVar, z => z, 0.10, 15);
 
     quiver.addWatcher(onChange);
 
