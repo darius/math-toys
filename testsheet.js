@@ -110,26 +110,22 @@ const pairs = [];
 function addSheet(group, domainArrow, rangeArrow) {
     zVar = domainArrow;
 
-    const newDiv = document.createElement('div');
-    newDiv.className = 'fieldsheet';
+    const H = HTML;
 
-    const newCanvas = document.createElement('canvas');
     const size = {width: 500, height: 500}; // XXX
-    newCanvas.width = size.width;
-    newCanvas.height = size.height;
+    const newCanvas = H.canvas(size);
     const newSheet = sh.makeSheet(newCanvas);
     pairs.push([rangeArrow, newSheet]); // XXX
-    newDiv.appendChild(newCanvas);
 
-    newDiv.appendChild(document.createElement('br'));
-    const deleteButton = document.createElement('input');
-    deleteButton.type = 'button';
-    deleteButton.value = 'Delete';
-    deleteButton.addEventListener('click', deleteSheet);
-    newDiv.appendChild(deleteButton);
-    const label = ('   ' + domainArrow.label + ' \u2192 ' // (right arrow char)
-                   + rangeArrow.label);
-    newDiv.appendChild(document.createTextNode(label));
+    const deleteButton = makeButton('Delete', deleteSheet);
+
+    const newDiv = H.div({className: 'fieldsheet'}, [
+        newCanvas,
+        H.br(),
+        deleteButton,
+        ('   ' + domainArrow.label + ' \u2192 ' // (right arrow char)
+         + rangeArrow.label),
+    ]);
 
     group.appendChild(newDiv);
     update();
