@@ -40,6 +40,33 @@ function toSuperscript(str) {
 }
 
 
+// TODO module for dom stuff?
+
+function makeDomMaker(tag) {
+    return (attrs, children) => {
+        const element = document.createElement(tag);
+        if (attrs !== void 0) for (const key of Object.keys(attrs)) {
+            element[key] = attrs[key];
+        }
+        if (children !== void 0) for (const child of children) {
+            element.appendChild(asDomElement(child));
+        }
+        return element;
+    };
+}
+
+function asDomElement(x) {
+    return typeof x === 'string' ? document.createTextNode(x) : x;
+}
+
+const HTML = {
+    br:     makeDomMaker('br'),
+    canvas: makeDomMaker('canvas'),
+    div:    makeDomMaker('div'),
+    input:  makeDomMaker('input'),
+};
+
+
 // TODO wrap in own module, I guess:
 
 function unfuzzCanvas(canvas) {

@@ -31,43 +31,34 @@ var mergeButton;                // XXX shouldn't be global
 var renameFrom;                 // XXX ditto
 
 function makeSheetGroup({side, quiver, options, controls}) {
-    const group = document.createElement('div');
-    group.className = 'sheetgroup';
+    const H = HTML;
 
-    const mainSheet = document.createElement('div');
-    mainSheet.className = 'mainsheet';
+    let fieldGroup, renameTo;
 
-    const canvas = document.createElement('canvas');
-    canvas.width = side;
-    canvas.height = side;
-
+    const canvas = H.canvas({width: side, height: side});
     const ui = sh.makeSheetUI(quiver, canvas, options, controls);
     ui.show();
 
     // TODO .disabled = true
-    const pinButton = makeButton("Pin/unpin points", onPin);
-    mergeButton = makeButton("Merge points", onMerge);
+    const group = H.div({className: 'sheetgroup'}, [
+        H.div({className: 'mainsheet'}, [
+            canvas,
+            H.br(),
+            makeButton("Pin/unpin points", onPin),
+            mergeButton = makeButton("Merge points", onMerge),
+            makeButton("Show field", onShowField),
+            H.br(),
+            "Rename ",
+            renameFrom = H.input({type: 'text', size: 5}),
+            " to ",
+            renameTo = H.input({type: 'text', size: 5}),
+            makeButton("Rename", onRename),
+        ]),
+        fieldGroup = H.div({className: 'fieldgroup'}),
+    ]);
+
     mergeButton.disabled = true;
-    renameFrom = makeTextInput(5);
-    const renameTo = makeTextInput(5);
 
-    mainSheet.appendChild(canvas);
-    mainSheet.appendChild(document.createElement('br'));
-    mainSheet.appendChild(pinButton);
-    mainSheet.appendChild(mergeButton);
-    mainSheet.appendChild(makeButton("Show field", onShowField));
-    mainSheet.appendChild(document.createElement('br'));
-    mainSheet.appendChild(document.createTextNode("Rename "));
-    mainSheet.appendChild(renameFrom);
-    mainSheet.appendChild(document.createTextNode(" to "));
-    mainSheet.appendChild(renameTo);
-    mainSheet.appendChild(makeButton("Rename", onRename));
-
-    const fieldGroup = document.createElement('div');
-    fieldGroup.className = 'fieldgroup';
-
-    group.appendChild(mainSheet);
-    group.appendChild(fieldGroup);
     return {
         element: group,
         canvas,
@@ -103,18 +94,9 @@ function makeSheetGroup({side, quiver, options, controls}) {
 }
 
 function makeButton(value, onClick) {
-    const button = document.createElement('input');
-    button.type = 'button';
-    button.value = value;
+    const button = HTML.input({type: 'button', value});
     if (onClick) button.addEventListener('click', onClick);
     return button;
-}
-
-function makeTextInput(size) {
-    const element = document.createElement('input');
-    element.type = 'text';
-    element.size = size;
-    return element;
 }
 
 
