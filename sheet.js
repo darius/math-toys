@@ -585,8 +585,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
         if (choice !== null) {
             toggleSelection(choice);
         } else {
-            const arrow = quiver.add({op: variableOp, at: at});
-            renameFrom.value = arrow.label;
+            quiver.add({op: variableOp, at: at});
         }
     }
 
