@@ -137,7 +137,7 @@ function addSheet(group, domainArrow, rangeArrow) {
 
     const H = HTML;
 
-    const size = {width: 400, height: 400}; // XXX
+    const size = {width: 380, height: 380}; // XXX
     const newCanvas = H.canvas(size);
     const newSheet = sh.makeSheet(newCanvas);
     pairs.push([rangeArrow, newSheet]); // XXX
