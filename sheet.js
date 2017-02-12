@@ -440,6 +440,16 @@ function makeSheetUI(quiver, canvas, options, controls) {
 
     const selection = [];
 
+    const watchers = [];
+
+    function addWatcher(watcher) {
+        watchers.push(watcher);
+    }
+
+    function notify(event) {
+        watchers.forEach(watch => watch(event));
+    }
+
     let dirty = false;
 
     function heyImDirty() {
@@ -583,8 +593,10 @@ function makeSheetUI(quiver, canvas, options, controls) {
     // Select arrow unless already selected, in which case unselect it.
     function toggleSelection(arrow) {
         assert(0 <= selection.length && selection.length <= 1);
+        const prev = [...selection];
         if (arrow !== selection[0]) selection.splice(0, 1, arrow);
         else                        selection.splice(0, 1);
+        notify({tag: 'selection', was: prev, is: [...selection]});
     }
 
     function pinSelection() {
@@ -677,6 +689,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
     }
 
     return {
+        addWatcher,
         getSelection: () => selection,
         merge,
         pinSelection,

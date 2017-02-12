@@ -33,7 +33,7 @@ var renameFrom;                 // XXX ditto
 function makeSheetGroup({side, quiver, options, controls}) {
     const H = HTML;
 
-    let fieldGroup, renameTo;
+    let fieldGroup, pinButton, renameTo, showButton;
 
     const canvas = H.canvas({width: side, height: side});
     const ui = sh.makeSheetUI(quiver, canvas, options, controls);
@@ -44,9 +44,9 @@ function makeSheetGroup({side, quiver, options, controls}) {
         H.div({className: 'mainsheet'}, [
             canvas,
             H.br(),
-            makeButton("Pin/unpin points", onPin),
+            pinButton = makeButton("Pin/unpin points", onPin),
             mergeButton = makeButton("Merge points", onMerge),
-            makeButton("Show field", onShowField),
+            showButton = makeButton("Show field", onShowField),
             H.br(),
             "Rename ",
             renameFrom = H.input({type: 'text', size: 5}),
@@ -57,7 +57,17 @@ function makeSheetGroup({side, quiver, options, controls}) {
         fieldGroup = H.div({className: 'fieldgroup'}),
     ]);
 
+    pinButton.disabled   = true;
     mergeButton.disabled = true;
+    showButton.disabled  = true;
+
+    ui.addWatcher(event => {
+        if (event.tag === 'selection') {
+            const selected = (0 < event.is.length);
+            pinButton.disabled = !selected;
+            showButton.disabled = !selected;
+        }
+    });
 
     return {
         element: group,
