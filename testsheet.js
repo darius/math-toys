@@ -148,7 +148,7 @@ function addSheet(group, domainArrow, rangeArrow) {
         newCanvas,
         H.br(),
         deleteButton,
-        ('   ' + domainArrow.label + ' \u2192 ' // (right arrow char)
+        (" " + domainArrow.label + " \u2192 " // (right arrow char)
          + rangeArrow.label),
     ]);
 
