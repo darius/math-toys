@@ -32,7 +32,7 @@ var mergeButton;                // XXX shouldn't be global
 function makeSheetGroup({side, quiver, options, controls}) {
     const H = HTML;
 
-    let fieldGroup, pinButton, renameFrom, renameTo, showButton;
+    let fieldGroup, pinButton, renameButton, renameFrom, renameTo, showButton;
 
     const canvas = H.canvas({width: side, height: side});
     const ui = sh.makeSheetUI(quiver, canvas, options, controls);
@@ -53,20 +53,22 @@ function makeSheetGroup({side, quiver, options, controls}) {
             " to ",
             renameTo = H.input({type: 'text', size: 5}),
             " ",
-            makeButton("Rename", onRename),
+            renameButton = makeButton("Rename", onRename),
         ]),
         fieldGroup = H.div({className: 'fieldgroup'}),
     ]);
 
-    pinButton.disabled   = true;
-    mergeButton.disabled = true;
-    showButton.disabled  = true;
+    pinButton.disabled    = true;
+    mergeButton.disabled  = true;
+    showButton.disabled   = true;
+    renameButton.disabled = true;
 
     quiver.addWatcher(event => {
         switch (event.tag) {
         case 'add': {
             renameFrom.value = event.arrow.label;
             renameTo.value = "";
+            renameButton.disabled = false;
             break;
         }
         }
