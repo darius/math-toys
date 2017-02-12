@@ -23,7 +23,7 @@ function onLoad() {
     ui = toy.ui;
 
     quiver.addWatcher(event => {
-        if (event.tag !== 'add') update();
+        if (event.tag === 'move') update();
     });
 }
 
