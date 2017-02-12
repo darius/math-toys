@@ -416,7 +416,6 @@ const emptyHand = {
     isDirty: () => false,
     isEmpty: () => true,
     moveFromStart: noOp,
-    onMove: noOp,
     onEnd: () => emptyHand,
     dragGrid: noOp,
     getSelectionStyle: noOp,
@@ -667,7 +666,6 @@ function makeSheetUI(quiver, canvas, options, controls) {
             const at = sheet.pointFromXY(xy);
             strayed = strayed || maxClickD < cnum.distance(handStartedAt, at);
             hand.moveFromStart(cnum.sub(at, handStartedAt));
-            hand.onMove();
             heyImDirty();
         },
         onEnd() {
@@ -794,8 +792,6 @@ function makeMoverHand(arrow, quiver) {
         arrow.at = cnum.add(startAt, offset);
         descent.wires[arrow.wires[0]] = arrow.at.re;
         descent.wires[arrow.wires[1]] = arrow.at.im;
-    }
-    function onMove() {
         quiver.onMove();
     }
     function onEnd() {
@@ -807,7 +803,6 @@ function makeMoverHand(arrow, quiver) {
         isDirty: () => false,
         isEmpty: () => false,
         moveFromStart,
-        onMove,
         onEnd,
         dragGrid: noOp,
         getSelectionStyle: noOp,
@@ -830,7 +825,6 @@ function makeSnapDragBackHand(oldHand, path) {
         isDirty: () => 0 < step,
         isEmpty: () => 0 === step,
         moveFromStart: noOp,
-        onMove: noOp,
         onEnd: () => emptyHand,
         dragGrid,
         getSelectionStyle: noOp,
@@ -857,7 +851,6 @@ function makeAddHand(sheet, selection, perform, highlightAnyOperand) {
         isDirty: () => false,
         isEmpty: () => false,
         moveFromStart,
-        onMove: noOp,
         onEnd,
         dragGrid() {
             sheet.translate(adding);
@@ -895,7 +888,6 @@ function makeMultiplyHand(sheet, selection, perform, highlightAnyOperand) {
         isDirty() { return false; },
         isEmpty: () => false,
         moveFromStart,
-        onMove: noOp,
         onEnd,
         dragGrid() {
             sheet.ctx.transform(multiplying.re, multiplying.im, -multiplying.im, multiplying.re, 0, 0);
