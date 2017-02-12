@@ -696,10 +696,6 @@ function makeSheetUI(quiver, canvas, options, controls) {
     };
 }
 
-function makeConstant(value) {
-    return {op: constantOp, at: value};
-}
-
 function addPointerListener(panel, element, listener) {
 
     function onTouchstart(event) {
@@ -741,6 +737,10 @@ function addPointerListener(panel, element, listener) {
         listener.onMove(coords);
         listener.onEnd();
     }));
+}
+
+function makeConstant(value) {
+    return {op: constantOp, at: value};
 }
 
 const constantOp = {
