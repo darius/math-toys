@@ -781,6 +781,24 @@ const variableOp = {
     },
 };
 
+// XXX not used yet. Meant for panning the sheet by dragging.
+function makePanHand(sheet) {
+    let oldOrigin = sheet.getOrigin(); // XXX
+    function moveFromStart(offset) {
+        sheet.setOrigin(oldOrigin + offset); // XXX
+    }
+    return {
+        isDirty: () => true,   // I guess
+        isEmpty: () => true,
+        moveFromStart,
+        onEnd: noOp,
+        dragGrid: noOp,
+        getSelectionStyle: noOp,
+        show: noOp,
+        ughXXX: () => false,
+    };
+}
+
 function makeMoverHand(arrow, quiver) {
     const startAt = arrow.at;
 
@@ -832,7 +850,6 @@ function makeSnapDragBackHand(oldHand, path) {
         ughXXX: () => 0 < step,
     };
 }
-
 
 function makeAddHand(sheet, selection, perform, highlightAnyOperand) {
     let adding = cnum.zero;
