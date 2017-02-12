@@ -64,6 +64,7 @@ const HTML = {
     canvas: makeDomMaker('canvas'),
     div:    makeDomMaker('div'),
     input:  makeDomMaker('input'),
+    p:      makeDomMaker('p'),
 };
 
 

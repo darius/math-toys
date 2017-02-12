@@ -44,14 +44,17 @@ function makeSheetGroup({side, quiver, options, controls}) {
         H.div({className: 'mainsheet'}, [
             canvas,
             H.br(),
-            pinButton = makeButton("Pin/unpin points", onPin),
+            pinButton = makeButton("Pin/unpin point", onPin),
+            " ",
             mergeButton = makeButton("Merge points", onMerge),
+            " ",
             showButton = makeButton("Show field", onShowField),
-            H.br(),
+            H.p(),
             "Rename ",
             renameFrom = H.input({type: 'text', size: 5}),
             " to ",
             renameTo = H.input({type: 'text', size: 5}),
+            " ",
             makeButton("Rename", onRename),
         ]),
         fieldGroup = H.div({className: 'fieldgroup'}),
@@ -62,10 +65,13 @@ function makeSheetGroup({side, quiver, options, controls}) {
     showButton.disabled  = true;
 
     ui.addWatcher(event => {
-        if (event.tag === 'selection') {
+        switch (event.tag) {
+        case 'selection': {
             const selected = (0 < event.is.length);
             pinButton.disabled = !selected;
             showButton.disabled = !selected;
+            break;
+        }
         }
     });
 
