@@ -100,7 +100,7 @@ function makeQuiver() {
     }
 
     function add(arrow) {
-        arrow.label = arrow.op.label(arrow, quiver);
+        if (arrow.label === void 0) arrow.label = arrow.op.label(arrow, quiver);
         arrow.wires = arrow.op.makeConstraint(arrow);
         arrow.stayPinned = false; // TODO: simpler to make true for constantOp?
         arrow.merged = false;
@@ -226,7 +226,9 @@ function makeQuiver() {
                 arrow.merged = true;
                 repr.also.push(arrow);
                 // TODO change arrow.op too? to something new?
-                repr.label = repr.label + ' = ' + arrow.label;
+                if (arrow.label !== null) {
+                    repr.label = repr.label + ' = ' + arrow.label;
+                }
             }
         }
         descent.substitute(substs);
@@ -538,10 +540,13 @@ function makeSheetUI(quiver, canvas, options, controls) {
     }
 
     function showArrowAsMade(arrow) {
+        if (arrow.label === null) return; // XXX I guess?
         arrow.op.showProvenance(arrow, sheet);
         for (const merged of arrow.also) {
-            merged.at = arrow.at;
-            merged.op.showProvenance(merged, sheet);
+            if (merged.label !== null) {
+                merged.at = arrow.at;
+                merged.op.showProvenance(merged, sheet);
+            }
         }
         if (0 < selection.length && hand.isEmpty()
            && (arrow.label === '0' || arrow.label === '1')) { // XXX hack
@@ -561,7 +566,7 @@ function makeSheetUI(quiver, canvas, options, controls) {
         sheet.drawDot(arrow.at, dotRadius);
         if (arrow.stayPinned) sheet.drawCross(arrow.at);
         sheet.ctx.fillStyle = 'black';
-        sheet.drawText(arrow.at, arrow.label, arrow.op.labelOffset);
+        sheet.drawText(arrow.at, arrow.label, arrow.op.labelOffset); // XXX check for null?
     }
 
     function findAnyOperand(pointer) {
@@ -989,15 +994,18 @@ const addOp = {
     },
     materializeInverse(arrow, quiver) {
         const inv = quiver.add({
+            label: '-' + parenthesize(arrow.source.label),
             op: variableOp,
             at: arrow.at,
             // XXX annotate this to say it's an added inverse
         });
+        // (It might be nicer to directly add the constraint, without
+        // creating the 'sum' arrow. Similarly for multiply, below.)
         const sum = quiver.add({
+            label: null, // since we're going to merge this with 0
             op: addOp,
             arg1: arrow.source,
             arg2: inv,
-            // XXX annotate this to say it's also artificial
         });
         quiver.merge([sum, quiver.zero]);
         // XXX need to notify with an 'add' event?
@@ -1051,15 +1059,16 @@ const mulOp = {
     },
     materializeInverse(arrow, quiver) {
         const inv = quiver.add({
+            label: '1/' + parenthesize(arrow.source.label),
             op: variableOp,
             at: arrow.at,
             // XXX annotate this to say it's an added inverse
         });
         const product = quiver.add({
+            label: null, // since we're going to merge this with 1
             op: mulOp,
             arg1: arrow.source,
             arg2: inv,
-            // XXX annotate this to say it's also artificial
         });
         quiver.merge([product, quiver.one]);
         // XXX need to notify with an 'add' event?
