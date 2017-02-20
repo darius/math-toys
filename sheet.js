@@ -36,6 +36,26 @@ function makeQuiver() {
         return arrows.filter(arrow => arrow.op !== constantOp);
     }
 
+    function getInverses(op) {
+        const result = [];
+        for (let i = 0; i < arrows.length; ++i) {
+            const arrow = arrows[i];
+            const inv = op.inverse(arrow.at);
+            if (inv === null) continue;
+            result.push({
+                op: inverseOp,
+                at: inv,
+                source: arrow,
+                inverseOf: op,
+            });
+        }
+        return result;
+    }
+
+    function materialize(inverseArrow) {
+        return inverseArrow.inverseOf.materializeInverse(inverseArrow, quiver);
+    }
+
     function nameNextArrow() {
         const vars = arrows.filter(arrow => arrow.op === variableOp);
         return String.fromCharCode(97 + vars.length);
@@ -232,6 +252,9 @@ function makeQuiver() {
         getArrows,
         getFreeArrows,
         getIndependentVariable,
+        getInverses,
+        materialize,
+        merge,
         mergeCoincidences,
         nameNextArrow,
         onMove,
@@ -553,10 +576,9 @@ function makeSheetUI(quiver, canvas, options, controls) {
         }
     }
 
-    function highlightAnyOperand(pointer) {
+    function highlightAnyOperand(pointer, arrows) {
         // XXX duplicate code for finding?
         const radius = 0.1; // XXX maxMergeDistance / sheet.scale
-        const arrows = quiver.getArrows();
         for (let i = 0; i < arrows.length; ++i) {
             const at = arrows[i].at;
             if (cnum.distance(at, pointer) < radius) {
@@ -578,6 +600,8 @@ function makeSheetUI(quiver, canvas, options, controls) {
     const zeroArrow = quiver.add(makeConstant(cnum.zero));
     const oneArrow  = quiver.add(makeConstant(cnum.one));
     quiver.add(makeConstant(cnum.neg(cnum.one)));
+    quiver.zero = zeroArrow;    // XXX hacky
+    quiver.one = oneArrow;      // XXX hacky
 
     function onClick(at) {
         const choice = pickTarget(at, quiver.getArrows());
@@ -607,16 +631,17 @@ function makeSheetUI(quiver, canvas, options, controls) {
     }
 
     function perform(op, at) {
-        const target = pickTarget(at, quiver.getArrows());
-        if (target !== null) {
-            assert(0 <= selection.length && selection.length <= 1);
-            selection.forEach((argument, i) => {
-                selection[i] = quiver.add({op: op, arg1: argument, arg2: target});
-            });
-            assert(0 <= selection.length && selection.length <= 1);
-            quiver.pinVariables(true); // TODO pin *everything* old
-            onStateChange();
+        let target = pickTarget(at, quiver.getArrows());
+        if (target === null) {
+            target = pickTarget(at, quiver.getInverses(op));
+            if (target === null) return;
+            target = quiver.materialize(target);
         }
+        selection.forEach((argument, i) => {
+            selection[i] = quiver.add({op: op, arg1: argument, arg2: target});
+        });
+        quiver.pinVariables(true); // TODO pin *everything* old
+        onStateChange();
     }
 
     function pickTarget(at, arrows) {
@@ -879,7 +904,8 @@ function makeAddHand(sheet, selection, perform, highlightAnyOperand) {
             selection.forEach(arrow => {
                 sheet.drawLine(arrow.at, cnum.add(arrow.at, adding));
             });
-            highlightAnyOperand(adding);
+            highlightAnyOperand(adding, [...quiver.getArrows(),
+                                         ...quiver.getInverses(addOp)]);
         },
         ughXXX: () => false,
     };
@@ -916,7 +942,8 @@ function makeMultiplyHand(sheet, selection, perform, highlightAnyOperand) {
             selection.forEach(arrow => {
                 sheet.drawSpiral(arrow.at, multiplying, cnum.mul(arrow.at, multiplying));
             });
-            highlightAnyOperand(multiplying);
+            highlightAnyOperand(multiplying, [...quiver.getArrows(),
+                                              ...quiver.getInverses(mulOp)]);
         },
         ughXXX: () => false,
     };
@@ -957,7 +984,28 @@ const addOp = {
     showProvenance(arrow, sheet) {
         sheet.drawLine(arrow.arg1.at, arrow.at);
     },
+    inverse(at) {
+        return cnum.neg(at);
+    },
+    materializeInverse(arrow, quiver) {
+        const inv = quiver.add({
+            op: variableOp,
+            at: arrow.at,
+            // XXX annotate this to say it's an added inverse
+        });
+        const sum = quiver.add({
+            op: addOp,
+            arg1: arrow.source,
+            arg2: inv,
+            // XXX annotate this to say it's also artificial
+        });
+        quiver.merge([sum, quiver.zero]);
+        // XXX need to notify with an 'add' event?
+        return inv;
+    },
 };
+
+//  inverseArrow.inverseOf.materializeInverse(inverseArrow, quiver);
 
 const mulOp = {
     color: 'black',
@@ -997,6 +1045,30 @@ const mulOp = {
     showProvenance(arrow, sheet) {
         sheet.drawSpiral(arrow.arg1.at, arrow.arg2.at, arrow.at);
     },
+    inverse(at) {
+        if (cnum.eq(at, cnum.zero)) return null;
+        return cnum.reciprocal(at);
+    },
+    materializeInverse(arrow, quiver) {
+        const inv = quiver.add({
+            op: variableOp,
+            at: arrow.at,
+            // XXX annotate this to say it's an added inverse
+        });
+        const product = quiver.add({
+            op: mulOp,
+            arg1: arrow.source,
+            arg2: inv,
+            // XXX annotate this to say it's also artificial
+        });
+        quiver.merge([product, quiver.one]);
+        // XXX need to notify with an 'add' event?
+        return inv;
+    },
+};
+
+const inverseOp = {
+    // shouldn't ever be invoked -- yeah, feels like another hack.
 };
 
 function infixLabel(arg1, opLabel, arg2) {
