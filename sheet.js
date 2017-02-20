@@ -909,8 +909,12 @@ function makeAddHand(sheet, selection, perform, highlightAnyOperand) {
             selection.forEach(arrow => {
                 sheet.drawLine(arrow.at, cnum.add(arrow.at, adding));
             });
-            highlightAnyOperand(adding, [...quiver.getArrows(),
-                                         ...quiver.getInverses(addOp)]);
+            const inverses = quiver.getInverses(addOp);
+            sheet.ctx.fillStyle = 'orange'; // or something
+            inverses.forEach(arrow => {
+                sheet.drawDot(arrow.at, dotRadius);
+            });
+            highlightAnyOperand(adding, [...quiver.getArrows(), ...inverses]);
         },
         ughXXX: () => false,
     };
@@ -947,8 +951,13 @@ function makeMultiplyHand(sheet, selection, perform, highlightAnyOperand) {
             selection.forEach(arrow => {
                 sheet.drawSpiral(arrow.at, multiplying, cnum.mul(arrow.at, multiplying));
             });
-            highlightAnyOperand(multiplying, [...quiver.getArrows(),
-                                              ...quiver.getInverses(mulOp)]);
+            const inverses = quiver.getInverses(mulOp);
+            sheet.ctx.fillStyle = 'orange'; // or something
+            inverses.forEach(arrow => {
+                sheet.drawDot(arrow.at, dotRadius);
+            });
+            highlightAnyOperand(multiplying,
+                                [...quiver.getArrows(), ...inverses]);
         },
         ughXXX: () => false,
     };
