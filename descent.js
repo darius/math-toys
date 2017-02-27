@@ -4,6 +4,8 @@
 
 'use strict';
 
+const cnum = mathtoys.complex;
+
 
 // A constraint network is composed of wires and constraints.
 // A constant wire has an empty name.
@@ -140,9 +142,9 @@ function substitute(substs) {
 
 // Where the reals have a wire, the complex numbers have a pair of wires.
 
-function makeComplexRef(name) {
-    return [makeRealRef(name+'.x'),
-            makeRealRef(name+'.y')];
+function makeComplexRef(name, value=cnum.zero) {
+    return [makeRealRef(name+'.x', value.re),
+            makeRealRef(name+'.y', value.im)];
 }
 
 function makeComplexConstant(value) {

@@ -146,6 +146,9 @@ function makeQuiver() {
             arrow._compiledAs = L;
             lines.push('const r'+L+' = '+re+', i'+L+' = '+im+';')
 
+            // XXX outputArrow might not be in the quiver, because
+            //  of a prior merge operation. Same problem above where
+            //  we're assuming arrow.arg1._compiledAs exists, etc.
             if (arrows[i] === outputArrow) {
                 lines.push('return {re: r'+L+', im: i'+L+'};');
                 break;
@@ -801,7 +804,7 @@ const variableOp = {
     label: (arrow, quiver) => quiver.nameNextArrow(),
     recompute: noOp,
     makeConstraint(arrow) {
-        return descent.makeComplexConstant(arrow.at); // XXX not really constant
+        return descent.makeComplexRef(arrow.label, arrow.at);
     },
     showProvenance(arrow, sheet) { // XXX fix the caller
         if (0) {
