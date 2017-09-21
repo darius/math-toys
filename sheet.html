@@ -21,86 +21,88 @@
   <script type="text/javascript" src="sheet.js"></script>
   <script type="text/javascript" src="testsheet.js"></script>
 
-  <p>This is a toy for exploring arithmetic on complex numbers: it's
-    meant to afford a direct experience with them, the way piling up
-    blocks is a direct experience of the natural numbers. It's
-    fancier, in offering equation solving and visualization of complex
-    functions. This is still a sketchy prototype, though. These
-    instructions below won't try to teach you the math, either.
+  <a id="toggleInstructions" href="#">(Hide the instructions)</a>
+  <div id="theInstructions">
+    <p>This is a toy for exploring arithmetic on complex numbers: it's
+      meant to afford a direct experience with them, the way piling up
+      blocks is a direct experience of the natural numbers. It's
+      fancier, in offering equation solving and visualization of complex
+      functions. This is still a sketchy prototype, though. These
+      instructions below won't try to teach you the math, either.
 
-  <p>Click somewhere on the canvas above (or tap, if you have a
-  touchscreen), and a new point will appear, called <i>a</i>. You can drag
-  that point around, and if you like you can rename it using the
-  Rename button below the canvas.
+    <p>Click somewhere on the canvas above (or tap, if you have a
+      touchscreen), and a new point will appear, called <i>a</i>. You can drag
+      that point around, and if you like you can rename it using the
+      Rename button below the canvas.
 
-  <p>Tap on this point <i>a</i> to select it, and a red selection circle
-  appears around it, and where 0 and 1 were there appear a plus and a
-  times sign, for adding and multiplying. Drag from the plus sign to
-  <i>a</i>, and a new point appears, called <i>2a</i>. While you were
-  dragging, the whole canvas slides along, because that's what adding
-  a complex number does: it displaces its argument.
+    <p>Tap on this point <i>a</i> to select it, and a red selection circle
+      appears around it, and where 0 and 1 were there appear a plus and a
+      times sign, for adding and multiplying. Drag from the plus sign to
+      <i>a</i>, and a new point appears, called <i>2a</i>. While you were
+      dragging, the whole canvas slides along, because that's what adding
+      a complex number does: it displaces its argument.
 
-  <p>If you released the mouse before you brought it to an
-  already-created point (like <i>a</i> or 0 or 1), then that canceled the
-  addition. You can however subtract: if you slide from 0 to the
-  point <i>opposite</i> <i>a</i>, then that's like adding -<i>a</i>.
+    <p>If you released the mouse before you brought it to an
+      already-created point (like <i>a</i> or 0 or 1), then that canceled the
+      addition. You can however subtract: if you slide from 0 to the
+      point <i>opposite</i> <i>a</i>, then that's like adding -<i>a</i>.
 
-  <p>Once you've created another point this way, such as 2<i>a</i>, notice
-  that dragging <i>a</i> around makes 2<i>a</i> move with it. You can
-  drag 2<i>a</i> instead and see <i>a</i> move.
+    <p>Once you've created another point this way, such as 2<i>a</i>, notice
+      that dragging <i>a</i> around makes 2<i>a</i> move with it. You can
+      drag 2<i>a</i> instead and see <i>a</i> move.
 
-  <p>Now to multiply: select <i>a</i> again, then this time drag from
-  the times sign at 1 on the complex plane. If you drag from there
-  to <i>a</i>, you'll create <i>a<sup>2</sup></i>. Try
-  dragging <i>a</i> now up to the point one unit above the origin, and
-  see <i>a<sup>2</sup></i> move to -1.
+    <p>Now to multiply: select <i>a</i> again, then this time drag from
+      the times sign at 1 on the complex plane. If you drag from there
+      to <i>a</i>, you'll create <i>a<sup>2</sup></i>. Try
+      dragging <i>a</i> now up to the point one unit above the origin, and
+      see <i>a<sup>2</sup></i> move to -1.
 
-  <p>Create another point <i>b</i> by clicking elsewhere on the
-  canvas. Add it to <i>a<sup>2</sup></i> by selecting one of them and
-  dragging from 0 to the other. Now with the
-  new <i>a<sup>2</sup>+b</i> still selected, click on the 'Show field'
-  button below the canvas. A new, smaller canvas should appear,
-  showing a view of the whole function <i>a→a<sup>2</sup>+b</i> as a
-  vector field: each arrow on the new canvas shows a shrunken-down
-  picture of the value of <i>a<sup>2</sup>+b</i> for a
-  particular <i>a</i>. Now drag <i>b</i> around and watch how the
-  field changes.
+    <p>Create another point <i>b</i> by clicking elsewhere on the
+      canvas. Add it to <i>a<sup>2</sup></i> by selecting one of them and
+      dragging from 0 to the other. Now with the
+      new <i>a<sup>2</sup>+b</i> still selected, click on the 'Show field'
+      button below the canvas. A new, smaller canvas should appear,
+      showing a view of the whole function <i>a→a<sup>2</sup>+b</i> as a
+      vector field: each arrow on the new canvas shows a shrunken-down
+      picture of the value of <i>a<sup>2</sup>+b</i> for a
+      particular <i>a</i>. Now drag <i>b</i> around and watch how the
+      field changes.
 
-  <p>(This view actually curves the arrows to approximate how the
-  function changes in the neighborhood of each input point. I think I
-  was getting too fancy there, but I haven't yet come back to remove
-  this feature.)
+    <p>(This view actually curves the arrows to approximate how the
+      function changes in the neighborhood of each input point. I think I
+      was getting too fancy there, but I haven't yet come back to remove
+      this feature.)
 
-  <p>Here's a kind of fun thing to do: create some more powers
-  of <i>a</i>,
-  say <i>a<sup>3</sup></i>, <i>a<sup>4</sup></i>, <i>a<sup>5</sup></i>.
-  Drag <i>a<sup>5</sup></i> around the origin and back to 1. The
-  others arrange themselves in a regular pentagon around the
-  origin. Try dragging the last one around the circle again, and the
-  others will change places into a star polygon. (This may be clearer
-  if you drag <i>a<sup>5</sup></i> a little outside the circle so that
-  it becomes a spiral.)
+    <p>Here's a kind of fun thing to do: create some more powers
+      of <i>a</i>,
+      say <i>a<sup>3</sup></i>, <i>a<sup>4</sup></i>, <i>a<sup>5</sup></i>.
+      Drag <i>a<sup>5</sup></i> around the origin and back to 1. The
+      others arrange themselves in a regular pentagon around the
+      origin. Try dragging the last one around the circle again, and the
+      others will change places into a star polygon. (This may be clearer
+      if you drag <i>a<sup>5</sup></i> a little outside the circle so that
+      it becomes a spiral.)
 
-  <p>Division is like subtraction: drag from the multiply sign to the
-  reciprocal of the target. (But the vector-field display doesn't yet
-  work with division or subtraction or the constraint-solving
-  introduced below.)
+    <p>Division is like subtraction: drag from the multiply sign to the
+      reciprocal of the target. (But the vector-field display doesn't yet
+      work with division or subtraction or the constraint-solving
+      introduced below.)
 
-  <p>You can introduce constraints using the 'Pin/unpin point' and 'Merge
-  points' buttons: select a point and press the Pin button. Now when
-  you drag another point, the pinned one won't move. Press the Pin
-  button again to unpin it.
+    <p>You can introduce constraints using the 'Pin/unpin point' and 'Merge
+      points' buttons: select a point and press the Pin button. Now when
+      you drag another point, the pinned one won't move. Press the Pin
+      button again to unpin it.
 
-  <p>Merging points permanently equates them. First drag the points
-  you want to merge till they're close together; they acquire a blue
-  halo and 'Merge points' button becomes active. Press it.
+    <p>Merging points permanently equates them. First drag the points
+      you want to merge till they're close together; they acquire a blue
+      halo and 'Merge points' button becomes active. Press it.
 
-  <p>Sticking to adding and multiplying (no dividing), the functions
-  you can make are called polynomials. If you play with it, you'll
-  find that every nonconstant polynomial can be dragged to any
-  target. This would <i>not</i> be true of 'real' numbers. Why does it
-  always work? I don't know! This is called the fundamental theorem of
-  algebra, and other people have proved it; I'd like to figure it out
-  without peeking.
-
+    <p>Sticking to adding and multiplying (no dividing), the functions
+      you can make are called polynomials. If you play with it, you'll
+      find that every nonconstant polynomial can be dragged to any
+      target. This would <i>not</i> be true of 'real' numbers. Why does it
+      always work? I don't know! This is called the fundamental theorem of
+      algebra, and other people have proved it; I'd like to figure it out
+      without peeking.
+  </div>
 </body>

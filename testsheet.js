@@ -25,6 +25,16 @@ function onLoad() {
     quiver.addWatcher(event => {
         if (event.tag === 'move') update();
     });
+
+    window.toggleInstructions.onclick = () => {
+        if (window.theInstructions.style.display === 'none') {
+            window.toggleInstructions.innerHTML = "(Hide the instructions)";
+            window.theInstructions.style.display = 'block';
+        } else {
+            window.toggleInstructions.innerHTML = "(Show the instructions)";
+            window.theInstructions.style.display = 'none';
+        }
+    }
 }
 
 var mergeButton;                // XXX shouldn't be global
